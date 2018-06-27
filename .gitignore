@@ -19,3 +19,4 @@ gen/
 /.idea/
 protocol/protocol-release/
 /protocol/build.gradle
+.idea/caches/build_file_checksums.ser
