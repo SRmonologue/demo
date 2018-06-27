@@ -1,0 +1,30 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.ohosure.smart">
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+
+    <application>
+        <!--数据库-->
+        <provider
+            android:name=".database.HSmartProvider"
+            android:authorities="com.ohosure.smart.database.HSmartProvider"
+            android:exported="true">
+            <meta-data
+                android:name="version"
+                android:value="1"/>
+            <meta-data
+                android:name="name"
+                android:value="hsmart.db"/>
+            <meta-data
+                android:name="authority"
+                android:value="com.ohosure.smart.database.HSmartProvider"/>
+        </provider>
+
+        <!-- Mqtt Service -->
+        <service android:name="org.eclipse.paho.android.service.MqttService"/>
+    </application>
+</manifest>
