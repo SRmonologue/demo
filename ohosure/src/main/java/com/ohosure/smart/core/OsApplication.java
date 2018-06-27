@@ -18,6 +18,8 @@ import android.telephony.TelephonyManager;
 import android.util.Base64;
 
 import com.ohosure.smart.core.communication.HttpOutMessage;
+import com.ohosure.smart.core.demo.Client;
+import com.ohosure.smart.core.demo.MqttClient;
 import com.ohosure.smart.database.HSmartProvider;
 import com.ohosure.smart.database.devkit.log.MLog;
 import com.ohosure.smart.database.devkit.sqlite.DBHelper;

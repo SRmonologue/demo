@@ -237,4 +237,10 @@ public class OhoSure {
         HSend hsend = new H0801(deviceId, deviceType, originalType, featureType, value);
         mApp.sendControl(hsend);
     }
+
+    public void saveRoomData(String room) {
+        mBusiness = new Business(){
+
+        };
+    }
 }
