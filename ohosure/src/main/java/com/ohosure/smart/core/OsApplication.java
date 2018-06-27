@@ -135,6 +135,10 @@ public class OsApplication extends Application {
         context.bindService(intentAction, conn, Service.BIND_AUTO_CREATE);
     }
 
+    public static Context getContext() {
+        return context;
+    }
+
     public ExecutorService getExtFixedThreadPool() {
         return this.extFixedThreadPool;
     }

@@ -7,9 +7,12 @@ import com.ohosure.smart.core.callback.ControlResponseCallback;
 import com.ohosure.smart.core.callback.InnerLoginResponseCallback;
 import com.ohosure.smart.core.callback.SceneResponseCallback;
 import com.ohosure.smart.core.callback.TimingTaskResponseCallback;
+import com.ohosure.smart.database.SoloDBOperator;
 import com.ohosure.smart.zigbeegate.protocol.H0101;
+import com.ohosure.smart.zigbeegate.protocol.H0201;
 import com.ohosure.smart.zigbeegate.protocol.H0280;
 import com.ohosure.smart.zigbeegate.protocol.H0801;
+import com.ohosure.smart.zigbeegate.protocol.H0901;
 import com.ohosure.smart.zigbeegate.protocol.H0980;
 import com.ohosure.smart.zigbeegate.protocol.HReceive;
 import com.ohosure.smart.zigbeegate.protocol.HSend;
@@ -21,6 +24,8 @@ import com.ohosure.smart.zigbeegate.protocol.business.Business;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
 
 /**
  * 描述：
@@ -238,9 +243,34 @@ public class OhoSure {
         mApp.sendControl(hsend);
     }
 
-    public void saveRoomData(String room) {
-        mBusiness = new Business(){
+    public void saveRoomData(int roomId, final String room) {
+        mBusiness = new Business() {
+            @Override
+            public void on0201Response(HReceive receive) {
+                super.on0201Response(receive);
+                H0201 h0201 = (H0201) receive;//用户新建或修改房间区域
+                h0201.analyze();
 
+                if (h0201.getResultCode() == 0) {
+                    SoloDBOperator.getInstance().insertOrUpdatePtRoomArea(
+                            h0201.getRoomAreaId(), room, "", 0);
+                } else {
+                    if (h0201.getResultCode() == 100) {
+                        //"已存在同名区域划分"
+                        return;
+                    }
+                }
+                mBusiness = null;
+            }
         };
+
+        mApp.addBusinessObserver(mBusiness);
+        HSend hsend = null;
+        try {
+            hsend = new H0901(roomId, room, "");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        mApp.sendControl(hsend);
     }
 }

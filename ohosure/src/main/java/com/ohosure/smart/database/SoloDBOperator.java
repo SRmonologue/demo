@@ -1,10 +1,10 @@
-package com.ohosure.autobee.home.database;
+package com.ohosure.smart.database;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 
-import com.core.App;
-import com.core.HSmartProvider;
+import com.ohosure.smart.core.OsApplication;
+
 
 public class SoloDBOperator {
 
@@ -22,7 +22,7 @@ public class SoloDBOperator {
 
     public void insertOrUpdatePtHome(String gateMac, long lastTime) {
 
-        Cursor cursor = App
+        Cursor cursor = OsApplication
                 .getContext()
                 .getContentResolver()
                 .query(HSmartProvider.MetaData.Home.CONTENT_URI,
@@ -34,7 +34,7 @@ public class SoloDBOperator {
             cursor.close();
             ContentValues cv = new ContentValues();
             cv.put(HSmartProvider.MetaData.Home.LAST_TIME, lastTime);
-            App.getContext()
+            OsApplication.getContext()
                     .getContentResolver()
                     .update(HSmartProvider.MetaData.Home.CONTENT_URI, cv,
                             HSmartProvider.MetaData.Home.GATE_MAC + "=?",
@@ -44,7 +44,7 @@ public class SoloDBOperator {
             cv.put(HSmartProvider.MetaData.Home.GATE_MAC, gateMac);
             cv.put(HSmartProvider.MetaData.Home.LAST_TIME, lastTime);
 
-            App.getContext().getContentResolver()
+            OsApplication.getContext().getContentResolver()
                     .insert(HSmartProvider.MetaData.Home.CONTENT_URI, cv);
         }
 
@@ -54,7 +54,7 @@ public class SoloDBOperator {
     public void insertOrUpdatePtControlDevice(long controlDeviceId,
                                               String controlDeviceName, long roomAreaId, int controlDeviceType) {
 
-        Cursor cursor = App
+        Cursor cursor = OsApplication
                 .getContext()
                 .getContentResolver()
                 .query(HSmartProvider.MetaData.ControlDevice.CONTENT_URI,
@@ -72,7 +72,7 @@ public class SoloDBOperator {
                     roomAreaId);
             cv.put(HSmartProvider.MetaData.ControlDevice.CONTROL_DEVICE_TYPE,
                     controlDeviceType);
-            App.getContext()
+            OsApplication.getContext()
                     .getContentResolver()
                     .update(HSmartProvider.MetaData.ControlDevice.CONTENT_URI,
                             cv,
@@ -90,7 +90,7 @@ public class SoloDBOperator {
             cv.put(HSmartProvider.MetaData.ControlDevice.CONTROL_DEVICE_TYPE,
                     controlDeviceType);
 
-            App.getContext()
+            OsApplication.getContext()
                     .getContentResolver()
                     .insert(HSmartProvider.MetaData.ControlDevice.CONTENT_URI,
                             cv);
@@ -102,7 +102,7 @@ public class SoloDBOperator {
     public void insertOrUpdatePtProduct(long productId, int productType,
                                         String productName, long roomAreaId) {
 
-        Cursor cursor = App
+        Cursor cursor = OsApplication
                 .getContext()
                 .getContentResolver()
                 .query(HSmartProvider.MetaData.Product.CONTENT_URI,
@@ -116,7 +116,7 @@ public class SoloDBOperator {
             cv.put(HSmartProvider.MetaData.Product.PRODUCT_TYPE, productType);
             cv.put(HSmartProvider.MetaData.Product.PRODUCT_NAME, productName);
             cv.put(HSmartProvider.MetaData.Product.ROOM_AREA_ID, roomAreaId);
-            App.getContext()
+            OsApplication.getContext()
                     .getContentResolver()
                     .update(HSmartProvider.MetaData.Product.CONTENT_URI, cv,
                             HSmartProvider.MetaData.Product.PRODUCT_ID + "=?",
@@ -128,7 +128,7 @@ public class SoloDBOperator {
             cv.put(HSmartProvider.MetaData.Product.PRODUCT_NAME, productName);
             cv.put(HSmartProvider.MetaData.Product.ROOM_AREA_ID, roomAreaId);
 
-            App.getContext().getContentResolver()
+            OsApplication.getContext().getContentResolver()
                     .insert(HSmartProvider.MetaData.Product.CONTENT_URI, cv);
         }
 
@@ -137,7 +137,7 @@ public class SoloDBOperator {
     public void updatePtProduct(long productId,
                                 String productName, long roomAreaId) {
 
-        Cursor cursor = App
+        Cursor cursor = OsApplication
                 .getContext()
                 .getContentResolver()
                 .query(HSmartProvider.MetaData.Product.CONTENT_URI,
@@ -150,7 +150,7 @@ public class SoloDBOperator {
             ContentValues cv = new ContentValues();
             cv.put(HSmartProvider.MetaData.Product.PRODUCT_NAME, productName);
             cv.put(HSmartProvider.MetaData.Product.ROOM_AREA_ID, roomAreaId);
-            App.getContext()
+            OsApplication.getContext()
                     .getContentResolver()
                     .update(HSmartProvider.MetaData.Product.CONTENT_URI, cv,
                             HSmartProvider.MetaData.Product.PRODUCT_ID + "=?",
@@ -162,7 +162,7 @@ public class SoloDBOperator {
     public void updatePtProductSceneConfig(long productId,
                                            long sceneId) {
 
-        Cursor cursor = App
+        Cursor cursor = OsApplication
                 .getContext()
                 .getContentResolver()
                 .query(HSmartProvider.MetaData.Product.CONTENT_URI,
@@ -170,38 +170,38 @@ public class SoloDBOperator {
                         HSmartProvider.MetaData.Product.PRODUCT_ID + "=?",
                         new String[]{String.valueOf(productId)}, null);
 
-//		if (cursor != null && cursor.getCount() > 0) {
-//			cursor.close();
-//			ContentValues cv = new ContentValues(); 
-//			cv.put(HSmartProvider.MetaData.Product.SCENE_ID_CONFIG_TEMP, sceneId); 
-//			App.getContext()
-//					.getContentResolver()
-//					.update(HSmartProvider.MetaData.Product.CONTENT_URI, cv,
-//							HSmartProvider.MetaData.Product.PRODUCT_ID + "=?",
-//							new String[] { String.valueOf(productId) });
-//		}  
+        //		if (cursor != null && cursor.getCount() > 0) {
+        //			cursor.close();
+        //			ContentValues cv = new ContentValues();
+        //			cv.put(HSmartProvider.MetaData.Product.SCENE_ID_CONFIG_TEMP, sceneId);
+        //			App.getContext()
+        //					.getContentResolver()
+        //					.update(HSmartProvider.MetaData.Product.CONTENT_URI, cv,
+        //							HSmartProvider.MetaData.Product.PRODUCT_ID + "=?",
+        //							new String[] { String.valueOf(productId) });
+        //		}
 
     }
 
     public void updatePtSceneProduct(long productId,
                                      long sceneId, int status) {
 
-//			ContentValues cv = new ContentValues(); 
-//			cv.put(HSmartProvider.MetaData.SceneProduct.CONFIG_STATUS, status); 
-//			App.getContext()
-//					.getContentResolver()
-//					.update(HSmartProvider.MetaData.SceneProduct.CONTENT_URI, cv,
-//							HSmartProvider.MetaData.SceneProduct.PRODUCT_ID + "=? and "
-//							+HSmartProvider.MetaData.SceneProduct.SCENE_ID + "=? ",
-//							new String[] { String.valueOf(productId),String.valueOf(sceneId) });
-//		 
+        //			ContentValues cv = new ContentValues();
+        //			cv.put(HSmartProvider.MetaData.SceneProduct.CONFIG_STATUS, status);
+        //			App.getContext()
+        //					.getContentResolver()
+        //					.update(HSmartProvider.MetaData.SceneProduct.CONTENT_URI, cv,
+        //							HSmartProvider.MetaData.SceneProduct.PRODUCT_ID + "=? and "
+        //							+HSmartProvider.MetaData.SceneProduct.SCENE_ID + "=? ",
+        //							new String[] { String.valueOf(productId),String.valueOf(sceneId) });
+        //
 
     }
 
     public void insertOrUpdatePtRoomArea(long roomAreaId, String roomAreaName,
                                          String roomAreaDescription, int floor) {
 
-        Cursor cursor = App
+        Cursor cursor = OsApplication
                 .getContext()
                 .getContentResolver()
                 .query(HSmartProvider.MetaData.RoomArea.CONTENT_URI,
@@ -217,7 +217,7 @@ public class SoloDBOperator {
             cv.put(HSmartProvider.MetaData.RoomArea.ROOM_AREA_DESCRIPTION,
                     roomAreaDescription);
             cv.put(HSmartProvider.MetaData.RoomArea.FLOOR, floor);
-            App.getContext()
+            OsApplication.getContext()
                     .getContentResolver()
                     .update(HSmartProvider.MetaData.RoomArea.CONTENT_URI,
                             cv,
@@ -234,7 +234,7 @@ public class SoloDBOperator {
                     roomAreaDescription);
             cv.put(HSmartProvider.MetaData.RoomArea.FLOOR, floor);
 
-            App.getContext().getContentResolver()
+            OsApplication.getContext().getContentResolver()
                     .insert(HSmartProvider.MetaData.RoomArea.CONTENT_URI, cv);
         }
 
@@ -242,7 +242,7 @@ public class SoloDBOperator {
 
 
     public int deleteFromPtControlDevice(long controlDeviceId) {
-        return App
+        return OsApplication
                 .getContext()
                 .getContentResolver()
                 .delete(HSmartProvider.MetaData.ControlDevice.CONTENT_URI,
@@ -252,7 +252,7 @@ public class SoloDBOperator {
     }
 
     public int deleteFromPtRoomArea(long roomAreaId) {
-        return App
+        return OsApplication
                 .getContext()
                 .getContentResolver()
                 .delete(HSmartProvider.MetaData.RoomArea.CONTENT_URI,
