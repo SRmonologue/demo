@@ -69,4 +69,13 @@ public class DBRoomArea implements Serializable {
     public void setColumnType(int columnType) {
         this.columnType = columnType;
     }
+
+    @Override
+    public String toString() {
+        return "DBRoomArea{" +
+                "columnRoomAreaId=" + columnRoomAreaId +
+                ", columnRoomAreaName='" + columnRoomAreaName + '\'' +
+                ", columnRoomAreaDescription='" + columnRoomAreaDescription + '\'' +
+                '}';
+    }
 }

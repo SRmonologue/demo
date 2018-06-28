@@ -9,9 +9,14 @@ import com.ohosure.smart.core.OhoSure;
 import com.ohosure.smart.core.callback.ConfigResponseCallback;
 import com.ohosure.smart.core.callback.ControlResponseCallback;
 import com.ohosure.smart.core.callback.InnerLoginResponseCallback;
+import com.ohosure.smart.core.callback.QueryRoomResponseCallback;
+import com.ohosure.smart.core.callback.RoomResponseCallback;
 import com.ohosure.smart.core.callback.SceneResponseCallback;
 import com.ohosure.smart.core.callback.TimingTaskResponseCallback;
 import com.ohosure.smart.database.devkit.log.MLog;
+import com.ohosure.smart.zigbeegate.protocol.model.DBRoomArea;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -35,6 +40,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.btn_timingTask).setOnClickListener(this);
 
         findViewById(R.id.btn_responseJson).setOnClickListener(this);
+
+        findViewById(R.id.btn_addRoom).setOnClickListener(this);
+
+        findViewById(R.id.btn_RemoveRoom).setOnClickListener(this);
+
+        findViewById(R.id.btn_QueryRoom).setOnClickListener(this);
     }
 
     @Override
@@ -91,6 +102,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 MLog.w(TAG, i + "");
                             }
                         });
+                break;
+            case R.id.btn_addRoom://添加编辑区域
+                OhoSure.getInstance(MainActivity.this).saveRoomData(0, "嘻嘻", new RoomResponseCallback() {
+                    @Override
+                    public void onSuccess(String res) {
+                        MLog.w(TAG, res);
+                    }
+
+                    @Override
+                    public void onError(String res) {
+                        MLog.w(TAG, res);
+                    }
+                });
+                break;
+            case R.id.btn_RemoveRoom://删除区域
+                OhoSure.getInstance(MainActivity.this).removeRoomData(35, new RoomResponseCallback() {
+                    @Override
+                    public void onSuccess(String res) {
+                        MLog.w(TAG, res);
+                    }
+
+                    @Override
+                    public void onError(String res) {
+                        MLog.w(TAG, res);
+                    }
+                });
+                break;
+            case R.id.btn_QueryRoom://查询区域
+                OhoSure.getInstance(MainActivity.this).queryRoomData(new QueryRoomResponseCallback() {
+                    @Override
+                    public void getRoomListResponse(List<DBRoomArea> list) {
+                        MLog.w(TAG, list.toString());
+                    }
+                });
                 break;
             default:
                 break;

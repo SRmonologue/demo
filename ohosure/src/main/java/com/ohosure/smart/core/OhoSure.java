@@ -1,15 +1,24 @@
 package com.ohosure.smart.core;
 
 import android.content.Context;
+import android.database.Cursor;
 
 import com.ohosure.smart.core.callback.ConfigResponseCallback;
 import com.ohosure.smart.core.callback.ControlResponseCallback;
 import com.ohosure.smart.core.callback.InnerLoginResponseCallback;
+import com.ohosure.smart.core.callback.QueryRoomResponseCallback;
+import com.ohosure.smart.core.callback.RoomResponseCallback;
 import com.ohosure.smart.core.callback.SceneResponseCallback;
 import com.ohosure.smart.core.callback.TimingTaskResponseCallback;
+import com.ohosure.smart.database.HSmartProvider;
+import com.ohosure.smart.database.SoloDBOperator;
 import com.ohosure.smart.zigbeegate.protocol.H0101;
+import com.ohosure.smart.zigbeegate.protocol.H0201;
+import com.ohosure.smart.zigbeegate.protocol.H0241;
 import com.ohosure.smart.zigbeegate.protocol.H0280;
 import com.ohosure.smart.zigbeegate.protocol.H0801;
+import com.ohosure.smart.zigbeegate.protocol.H0901;
+import com.ohosure.smart.zigbeegate.protocol.H0941;
 import com.ohosure.smart.zigbeegate.protocol.H0980;
 import com.ohosure.smart.zigbeegate.protocol.HReceive;
 import com.ohosure.smart.zigbeegate.protocol.HSend;
@@ -17,10 +26,15 @@ import com.ohosure.smart.zigbeegate.protocol.PrepareDomainHelper;
 import com.ohosure.smart.zigbeegate.protocol.RequestConfig;
 import com.ohosure.smart.zigbeegate.protocol.RequestTable;
 import com.ohosure.smart.zigbeegate.protocol.business.Business;
+import com.ohosure.smart.zigbeegate.protocol.model.DBRoomArea;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 描述：
@@ -236,5 +250,91 @@ public class OhoSure {
 
         HSend hsend = new H0801(deviceId, deviceType, originalType, featureType, value);
         mApp.sendControl(hsend);
+    }
+
+    /**
+     * 增加编辑区域
+     *
+     * @param roomId
+     * @param room
+     * @param callback
+     */
+    public void saveRoomData(int roomId, final String room, final RoomResponseCallback callback) {
+        mBusiness = new Business() {
+            @Override
+            public void on0201Response(HReceive receive) {
+                super.on0201Response(receive);
+                H0201 h0201 = (H0201) receive;
+                h0201.analyze();
+                if (h0201.getResultCode() == 0) {
+                    callback.onSuccess("保存成功");
+                    SoloDBOperator.getInstance().insertOrUpdatePtRoomArea(
+                            h0201.getRoomAreaId(), room, "", 0);
+                } else {
+                    if (h0201.getResultCode() == 100) {
+                        callback.onError("已存在同名区域划分");
+                        return;
+                    }
+                }
+                mBusiness = null;
+            }
+        };
+
+        mApp.addBusinessObserver(mBusiness);
+        HSend hsend = null;
+        try {
+            hsend = new H0901(roomId, room, "");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        mApp.sendControl(hsend);
+    }
+
+    /**
+     * 删除区域
+     *
+     * @param roomId
+     * @param callback
+     */
+    public void removeRoomData(final int roomId, final RoomResponseCallback callback) {
+        mBusiness = new Business() {
+            @Override
+            public void on0241Response(HReceive receive) {
+                super.on0241Response(receive);
+                H0241 h0241 = (H0241) receive;
+                h0241.analyze();
+                if (h0241.getResultCode() == 0) {
+                    callback.onSuccess("删除成功");
+                    SoloDBOperator.getInstance().deleteFromPtRoomArea(roomId);
+                } else {
+                    callback.onError("删除失败");
+                }
+            }
+        };
+
+        mApp.addBusinessObserver(mBusiness);
+        HSend hSend = new H0941(roomId);
+        mApp.sendControl(hSend);
+    }
+
+
+    public void queryRoomData(QueryRoomResponseCallback callback) {
+        List<DBRoomArea> mList = new ArrayList<>();
+        mList.clear();
+        Cursor cursor = context.getContentResolver().query(HSmartProvider.MetaData.RoomArea.CONTENT_URI,
+                new String[]{
+                        HSmartProvider.MetaData.RoomArea._ID,
+                        HSmartProvider.MetaData.RoomArea.ROOM_AREA_ID,
+                        HSmartProvider.MetaData.RoomArea.ROOM_AREA_NAME,
+                        HSmartProvider.MetaData.RoomArea.ROOM_AREA_DESCRIPTION
+                }, null, null, null);
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                mList.add(new DBRoomArea(cursor.getInt(1), cursor.getString(2),
+                        cursor.getString(3), 0, 0));
+            }
+            cursor.close();
+        }
+        callback.getRoomListResponse(mList);
     }
 }
