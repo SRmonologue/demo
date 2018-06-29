@@ -1,10 +1,11 @@
 package com.ohosure.smart.database.devkit.log;
 
+import android.support.annotation.Keep;
 import android.util.Log;
 
 import com.ohosure.smart.database.devkit.constant.Const;
 
-
+@Keep
 public class MLog {
 
 	public static void v(String tag, String info) {

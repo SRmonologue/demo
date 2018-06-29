@@ -33,5 +33,6 @@
                 <action android:name="devkit.mj.net.CoreService.action"/>
             </intent-filter>
         </service>
+        <service android:name="org.eclipse.paho.android.service.MqttService"/>
     </application>
 </manifest>

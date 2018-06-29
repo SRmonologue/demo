@@ -14,6 +14,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.IBinder;
 import android.os.Vibrator;
+import android.support.annotation.Keep;
 import android.telephony.TelephonyManager;
 import android.util.Base64;
 
@@ -125,6 +126,7 @@ public class OsApplication extends Application {
     //后台服务代理
     public CoreService.BusinessManager businessManager;
 
+    @Keep
     public void initOhosure(Context context) {
         this.context = context;
         Intent intentAction = new Intent();

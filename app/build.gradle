@@ -16,6 +16,12 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    repositories {
+        flatDir {
+            dirs 'libs'
+        }
+    }
 }
 
 dependencies {
@@ -23,4 +29,8 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.1'
+//    implementation(name: 'ohosure-release', ext: 'aar')
+//    implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
+//    implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
+//
 }

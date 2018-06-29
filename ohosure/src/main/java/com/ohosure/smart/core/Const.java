@@ -1,11 +1,13 @@
 package com.ohosure.smart.core;
 
 
+import android.support.annotation.Keep;
+
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 
-
+@Keep
 public class Const {
 
     public static final int UDP_PORT = 9888;

@@ -10,6 +10,7 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.support.annotation.Keep;
 import android.text.TextUtils;
 
 import com.ohosure.smart.core.Const;
@@ -43,6 +44,7 @@ import static com.ohosure.smart.core.Const.DEFAULT_BIND_USERNAME;
  * Created by daxing on 2017/3/17.
  */
 
+@Keep
 public class CoreService extends Service {
 
     private static final String TAG = CoreService.class.getSimpleName();

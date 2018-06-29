@@ -2,6 +2,7 @@ package com.ohosure.smart.core;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.support.annotation.Keep;
 
 import com.ohosure.smart.core.callback.ConfigResponseCallback;
 import com.ohosure.smart.core.callback.ControlResponseCallback;
@@ -37,9 +38,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 描述：
+ *
  * Created by 9527 on 2018/6/20.
  */
+@Keep
 public class OhoSure {
     private Context context;
     private static OhoSure sOhoSure;
