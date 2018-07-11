@@ -103,9 +103,7 @@ import static com.ohosure.smart.core.Const.DEFAULT_BIND_USERNAME;
 public class OsApplication extends Application {
 
     private static final String TAG = OsApplication.class.getSimpleName();
-    /**
-     * Application实例
-     */
+
     public static Context context;
 
     /**
