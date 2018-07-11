@@ -689,8 +689,6 @@ public class CoreService extends Service {
             MLog.i(TAG, "---------断开链接，connectionLost---------" + arg0);
 
             doClientConnection();
-
-
         }
     };
 

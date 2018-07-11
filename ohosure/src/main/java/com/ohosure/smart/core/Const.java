@@ -17,7 +17,7 @@ public class Const {
 //        public static final String BASE_URL = "https://api.ohosure.com/";
 
     //绿地项目
-    public static final String MQTT_HOST = "tcp://mqtt.ohosureproj.com:1883";
+    public static String MQTT_HOST = "tcp://mqtt.ohosureproj.com:1883";
     public static final String BASE_URL = "https://api.ohosureproj.com/";
 
     public static String ACCESS_TOKEN = "";

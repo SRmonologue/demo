@@ -10,10 +10,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.IBinder;
-import android.os.Vibrator;
 import android.support.annotation.Keep;
 import android.telephony.TelephonyManager;
 import android.util.Base64;
@@ -110,17 +111,12 @@ public class OsApplication extends Application {
     /**
      * 业务回调列表
      */
-    //    ArrayList<Business> listBusiness = new ArrayList<Business>();
     Business mBusiness = new Business();
 
     /**
      * 固定线程池length=4，辅助Activity获取各种数据
      */
     private ExecutorService extFixedThreadPool;
-    /**
-     * 震动
-     */
-    Vibrator vibrator;
     //用户个性化配置
     SharedPreferences sharedPreferences;
     //后台服务代理
@@ -180,14 +176,25 @@ public class OsApplication extends Application {
     }
 
     public void startLogin(String name, String password) {
+        if (this.isLogin()) {
+            return;
+        }
         SharedPreferences sp = getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
         SharedPreferences.Editor edit = sp.edit();
         edit.putString("name", name);
         edit.putString("password", password);
         edit.commit();
+        PackageManager manager = this.getPackageManager();
+        PackageInfo info = null;
+        try {
+            info = manager.getPackageInfo(this.getPackageName(), 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        String version = info.versionName;
         TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         String DEVICE_ID = tm.getDeviceId();
-        Const.CLIENT_ID = "MQTTService" + DEVICE_ID;
+        Const.CLIENT_ID = "Android|" +version+"|"+ DEVICE_ID;
         ConnectInfo connectInfo = new ConnectInfo();
         if (name.equalsIgnoreCase(DEFAULT_BIND_USERNAME)) {
             //内网登陆
@@ -224,9 +231,6 @@ public class OsApplication extends Application {
                 JSONObject json;
                 try {
                     json = new JSONObject(inMessage.getResponse());
-                    //                    for (int i = 0; i < listBusiness.size(); i++) {
-                    //                        listBusiness.get(i).onRequestUpdateDescription(json);
-                    //                    }
                     mBusiness.onRequestUpdateDescription(json);
                 } catch (JSONException e) {
 
@@ -255,9 +259,6 @@ public class OsApplication extends Application {
 
                     }
 
-                    //                    for (int i = 0; i < listBusiness.size(); i++) {
-                    //                        listBusiness.get(i).onResponseUpdate(updateMode);
-                    //                    }
                     mBusiness.onResponseUpdate(updateMode);
                     if (updateMode != 0) {
                         sendRequest(new RequestConfig(Const.CLIENT_SESSION));
@@ -278,12 +279,7 @@ public class OsApplication extends Application {
                             // 更新失败分析
                             int res = jobj.optInt("result");
                             if (res != 0) {
-                                reportResultCode(
-                                        RequestConfig.class.getSimpleName(), res);
-
-                                //                                for (int i = 0; i < listBusiness.size(); i++) {
-                                //                                    listBusiness.get(i).onResponseConfig(1);
-                                //                                }
+                                reportResultCode(RequestConfig.class.getSimpleName(), res);
                                 mBusiness.onResponseConfig(1);
 
                                 return;
@@ -363,12 +359,7 @@ public class OsApplication extends Application {
 
                             }
                             db.setTransactionSuccessful();
-                            //                            for (int i = 0; i < listBusiness.size(); i++) {
-                            //                                listBusiness.get(i).onResponseConfig(0);
                             // 通知应用层刷新数据
-
-                            // listBusiness.get(i).onDataRefresh();
-                            //                            }
                             mBusiness.onResponseConfig(0);
                             MLog.v(TAG, "配置更新成功" + System.currentTimeMillis());
 
@@ -376,9 +367,6 @@ public class OsApplication extends Application {
                             checkDeviceValue();
 
                         } catch (Exception e) {
-                            //                            for (int i = 0; i < listBusiness.size(); i++) {
-                            //                                listBusiness.get(i).onResponseConfig(1);
-                            //                            }
                             mBusiness.onResponseConfig(1);
                             reportResultCode(RequestConfig.class.getSimpleName(), 404);
                             MLog.e(TAG, "配置更新失败");
@@ -392,18 +380,11 @@ public class OsApplication extends Application {
                     } else if (matchURI.indexOf("requestTable") > 0) {
                         //TODO
                         mBusiness.onRequestTable(inMessage.getResponse());
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).onRequestTable(inMessage.getResponse());
-                        //                        }
-
 
                     } else if (matchURI.indexOf("requestEnergy") > 0) {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            //                            for (int i = 0; i < listBusiness.size(); i++) {
-                            //                                listBusiness.get(i).onRequestEnergy(json);
-                            //                            }
                             mBusiness.onRequestEnergy(json);
                         } catch (JSONException e) {
 
@@ -414,9 +395,6 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            //                            for (int i = 0; i < listBusiness.size(); i++) {
-                            //                                listBusiness.get(i).onRequestDeviceList(json);
-                            //                            }
                             mBusiness.onRequestDeviceList(json);
                         } catch (JSONException e) {
 
@@ -427,9 +405,6 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            //                            for (int i = 0; i < listBusiness.size(); i++) {
-                            //                                listBusiness.get(i).onRequestAddDevice(json);
-                            //                            }
                             mBusiness.onRequestAddDevice(json);
                         } catch (JSONException e) {
 
@@ -440,9 +415,6 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            //                            for (int i = 0; i < listBusiness.size(); i++) {
-                            //                                listBusiness.get(i).onRequestVerifyUser(json);
-                            //                            }
                             mBusiness.onRequestVerifyUser(json);
                         } catch (JSONException e) {
 
@@ -453,9 +425,6 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            //                            for (int i = 0; i < listBusiness.size(); i++) {
-                            //                                listBusiness.get(i).onRequestDelDevice(json);
-                            //                            }
                             mBusiness.onRequestDelDevice(json);
                         } catch (JSONException e) {
 
@@ -466,9 +435,6 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            //                            for (int i = 0; i < listBusiness.size(); i++) {
-                            //                                listBusiness.get(i).onRequestUserList(json);
-                            //                            }
                             mBusiness.onRequestUserList(json);
                         } catch (JSONException e) {
 
@@ -479,9 +445,6 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            //                            for (int i = 0; i < listBusiness.size(); i++) {
-                            //                                listBusiness.get(i).onRequestAddUser(json);
-                            //                            }
                             mBusiness.onRequestAddUser(json);
                         } catch (JSONException e) {
 
@@ -492,9 +455,6 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            //                            for (int i = 0; i < listBusiness.size(); i++) {
-                            //                                listBusiness.get(i).onRequestDelUser(json);
-                            //                            }
                             mBusiness.onRequestDelUser(json);
                         } catch (JSONException e) {
 
@@ -505,9 +465,6 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            //                            for (int i = 0; i < listBusiness.size(); i++) {
-                            //                                listBusiness.get(i).onRequestUnbindUser(json);
-                            //                            }
                             mBusiness.onRequestUnbindUser(json);
                         } catch (JSONException e) {
 
@@ -518,9 +475,6 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            //                            for (int i = 0; i < listBusiness.size(); i++) {
-                            //                                listBusiness.get(i).onRequestSendSmsCode(json);
-                            //                            }
                             mBusiness.onRequestSendSmsCode(json);
                         } catch (JSONException e) {
 
@@ -531,9 +485,6 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            //                            for (int i = 0; i < listBusiness.size(); i++) {
-                            //                                listBusiness.get(i).onRequestPutAdmin(json);
-                            //                            }
                             mBusiness.onRequestPutAdmin(json);
                         } catch (JSONException e) {
 
@@ -544,9 +495,6 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            //                            for (int i = 0; i < listBusiness.size(); i++) {
-                            //                                listBusiness.get(i).onRequestRenameAlias(json);
-                            //                            }
                             mBusiness.onRequestRenameAlias(json);
                         } catch (JSONException e) {
 
@@ -557,9 +505,6 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            //                            for (int i = 0; i < listBusiness.size(); i++) {
-                            //                                listBusiness.get(i).onRequestAlarm(json);
-                            //                            }
                             mBusiness.onRequestAlarm(json);
                         } catch (JSONException e) {
 
@@ -570,16 +515,10 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            //                            for (int i = 0; i < listBusiness.size(); i++) {
-                            //                                listBusiness.get(i).onRequestPushIRData(json);
-                            //                            }
                             mBusiness.onRequestPushIRData(json);
                         } catch (JSONException e) {
                             reportResultCode(RequestSend.class.getSimpleName() + "prev", 444);
                             e.printStackTrace();
-                            //                            for (int i = 0; i < listBusiness.size(); i++) {
-                            //                                listBusiness.get(i).onRequestPushIRData(null);
-                            //                            }
                             mBusiness.onRequestPushIRData(null);
                         }
 
@@ -593,9 +532,6 @@ public class OsApplication extends Application {
                                 jsonObject = new JSONObject(inMessage.getResponse());
                                 int result = jsonObject.optInt("result");
                                 if (result != 0) {
-                                    //                                    for (int i = 0; i < listBusiness.size(); i++) {
-                                    //                                        listBusiness.get(i).onRemoteIssure(result);
-                                    //                                    }
                                     mBusiness.onRemoteIssure(result);
 
                                     reportResultCode(RequestSend.class.getSimpleName()
@@ -632,264 +568,113 @@ public class OsApplication extends Application {
                 messageBodyLegth = bReader.getWORD();
                 switch (messageCode) {
                     case 0x0100:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0100Response(
-                        //                                    new H0100(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0100Response(new H0100(bReader.getByteArray()));
-
                         break;
                     case 0x0201:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0201Response(
-                        //                                    new H0201(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0201Response(new H0201(bReader.getByteArray()));
 
                         break;
                     case 0x0202:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0202Response(
-                        //                                    new H0202(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0202Response(new H0202(bReader.getByteArray()));
 
                         break;
                     case 0x0203:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0203Response(
-                        //                                    new H0203(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0203Response(new H0203(bReader.getByteArray()));
 
                         break;
                     case 0x0204:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0204Response(
-                        //                                    new H0204(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0204Response(new H0204(bReader.getByteArray()));
 
                         break;
                     case 0x0205:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0205Response(
-                        //                                    new H0205(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0205Response(new H0205(bReader.getByteArray()));
 
                         break;
                     case 0x0206:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0206Response(
-                        //                                    new H0206(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0206Response(new H0206(bReader.getByteArray()));
 
                         break;
                     case 0x0207:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0207Response(
-                        //                                    new H0207(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0207Response(new H0207(bReader.getByteArray()));
 
                         break;
                     case 0x0208:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0208Response(
-                        //                                    new H0208(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0208Response(new H0208(bReader.getByteArray()));
                         break;
                     case 0x0209:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0209Response(
-                        //                                    new H0209(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0209Response(new H0209(bReader.getByteArray()));
 
                         break;
                     case 0x020a:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on020aResponse(
-                        //                                    new H020a(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on020aResponse(new H020a(bReader.getByteArray()));
 
                         break;
                     case 0x020b:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on020bResponse(
-                        //                                    new H020b(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on020bResponse(new H020b(bReader.getByteArray()));
 
                         break;
                     case 0x0241:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0241Response(
-                        //                                    new H0241(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0241Response(new H0241(bReader.getByteArray()));
 
                         break;
                     case 0x0242:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0242Response(
-                        //                                    new H0242(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0242Response(new H0242(bReader.getByteArray()));
                         break;
                     case 0x0243:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0243Response(
-                        //                                    new H0243(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0243Response(new H0243(bReader.getByteArray()));
                         break;
                     case 0x0244:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0244Response(
-                        //                                    new H0244(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0244Response(new H0244(bReader.getByteArray()));
 
                         break;
                     case 0x0245:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0245Response(
-                        //                                    new H0245(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0245Response(new H0245(bReader.getByteArray()));
 
                         break;
                     case 0x0246:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0246Response(
-                        //                                    new H0246(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0246Response(new H0246(bReader.getByteArray()));
                         break;
                     case 0x0211:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0211Response(
-                        //                                    new H0211(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0211Response(new H0211(bReader.getByteArray()));
                         break;
                     case 0x0212:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0212Response(
-                        //                                    new H0212(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0212Response(new H0212(bReader.getByteArray()));
                         break;
                     case 0x0213:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0213Response(
-                        //                                    new H0213(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0213Response(new H0213(bReader.getByteArray()));
 
                         break;
                     case 0x0214:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0214Response(
-                        //                                    new H0214(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0214Response(new H0214(bReader.getByteArray()));
 
                         break;
                     case 0x0215:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0215Response(
-                        //                                    new H0215(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0215Response(new H0215(bReader.getByteArray()));
 
                         break;
                     case 0x0216:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0216Response(
-                        //                                    new H0216(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0216Response(new H0216(bReader.getByteArray()));
 
                         break;
                     case 0x0217:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0217Response(
-                        //                                    new H0217(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0217Response(new H0217(bReader.getByteArray()));
 
                         break;
                     case 0x0261:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0261Response(
-                        //                                    new H0261(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0261Response(new H0261(bReader.getByteArray()));
 
                         break;
                     case 0x0221:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0221Response(
-                        //                                    new H0221(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0221Response(new H0221(bReader.getByteArray()));
 
                     case 0x0222:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0222Response(
-                        //                                    new H0222(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0222Response(new H0222(bReader.getByteArray()));
                         break;
                     case 0x0223:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0223Response(
-                        //                                    new H0223(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0223Response(new H0223(bReader.getByteArray()));
 
                         break;
                     case 0x0262:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0262Response(
-                        //                                    new H0262(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0262Response(new H0262(bReader.getByteArray()));
 
                         break;
@@ -938,10 +723,6 @@ public class OsApplication extends Application {
 
                         }
 
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0265Response(h0265.getResultCode());
-                        //                        }
                         mBusiness.on0265Response(h0265.getResultCode());
                     }
                     break;
@@ -975,111 +756,51 @@ public class OsApplication extends Application {
                             if (db != null)
                                 db.endTransaction();
                         }
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0260Response(
-                        //                                    new H0260(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0260Response(new H0260(bReader.getByteArray()));
 
                         break;
                     }
                     case 0x0280:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0280Response(
-                        //                                    new H0280(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0280Response(new H0280(bReader.getByteArray()));
 
                         break;
                     case 0x0281:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0281Response(
-                        //                                    new H0281(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0281Response(new H0281(bReader.getByteArray()));
 
                         break;
                     case 0x0282:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0282Response(
-                        //                                    new H0282(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0282Response(new H0282(bReader.getByteArray()));
 
                         break;
                     case 0x0283:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0283Response(
-                        //                                    new H0283(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0283Response(new H0283(bReader.getByteArray()));
 
                         break;
                     case 0x0284:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0284Response(
-                        //                                    new H0284(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0284Response(new H0284(bReader.getByteArray()));
 
                         break;
                     case 0x0285:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0285Response(
-                        //                                    new H0284(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on0285Response(new H0284(bReader.getByteArray()));
 
                         break;
                     case 0x02a1:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on02a1Response(
-                        //                                    new H02a1(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on02a1Response(new H02a1(bReader.getByteArray()));
 
                         break;
                     case 0x02a2:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on02a2Response(
-                        //                                    new H02a2(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on02a2Response(new H02a2(bReader.getByteArray()));
 
                         break;
                     case 0x02a3:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on02a3Response(
-                        //                                    new H02a3(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on02a3Response(new H02a3(bReader.getByteArray()));
                         break;
 
                     case 0x02b0:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on02b0Response(
-                        //                                    new H02b0(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on02b0Response(new H02b0(bReader.getByteArray()));
 
                         break;
                     case 0x02b1:
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on02b1Response(
-                        //                                    new H02b1(bReader.getByteArray()));
-                        //                        }
                         mBusiness.on02b1Response(new H02b1(bReader.getByteArray()));
 
                         break;
@@ -1209,11 +930,6 @@ public class OsApplication extends Application {
                             }
                             cursor.close();
                         }
-                        //
-
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).on0101Response(h0101);
-                        //                        }
                         mBusiness.on0101Response(h0101);
 
                         break;
@@ -1346,10 +1062,6 @@ public class OsApplication extends Application {
                                 }
                                 mCursor.close();
                             }
-                            //
-                            //                            for (int i = 0; i < listBusiness.size(); i++) {
-                            //                                listBusiness.get(i).on0101Response(mH0101);
-                            //                            }
                             mBusiness.on0101Response(mH0101);
                         }
                         break;
@@ -1358,19 +1070,12 @@ public class OsApplication extends Application {
                         H0230 h0230 = new H0230(bReader.getByteArray());
                         h0230.analyze();
                         h0230.updateDatabase(getContentResolver());
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i).onRequestDeviceOnlineChange();
-                        //                        }
                         mBusiness.onRequestDeviceOnlineChange();
                     }
                     break;
                     case 0x0231: {//设备辅助定位
                         H0231 h0231 = new H0231(bReader.getByteArray());
                         h0231.analyze();
-                        //                        for (int i = 0; i < listBusiness.size(); i++) {
-                        //                            listBusiness.get(i)
-                        //                                    .onRequestLocation(h0231.getDevice());
-                        //                        }
                         mBusiness.onRequestLocation(h0231.getDevice());
                     }
                     break;
@@ -1421,28 +1126,17 @@ public class OsApplication extends Application {
                 //提示登录错误
                 reportResultCode(RequestAuth.class.getSimpleName(), result);
             }
-            //            for (int i = 0; i < listBusiness.size(); i++) {
-            //                listBusiness.get(i).onResponseAuth(result);
-            //            }
             mBusiness.onResponseAuth(result);
-
         }
 
         @Override
         public void onLoginOut() {
-            //            for (int i = 0; i < listBusiness.size(); i++) {
-            //                listBusiness.get(i).onResponseCancel();
-            //            }
             mBusiness.onResponseCancel();
         }
 
         @Override
         public void onConnectLost() {
-            //            for (int i = 0; i < listBusiness.size(); i++) {
-            //                listBusiness.get(i).onResponseCancel();
-            //            }
             mBusiness.onResponseCancel();
-
         }
     };
 

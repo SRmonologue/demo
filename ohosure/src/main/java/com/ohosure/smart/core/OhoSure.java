@@ -6,13 +6,17 @@ import android.support.annotation.Keep;
 
 import com.ohosure.smart.core.callback.ConfigResponseCallback;
 import com.ohosure.smart.core.callback.ControlResponseCallback;
+import com.ohosure.smart.core.callback.InfoResponseCallback;
 import com.ohosure.smart.core.callback.InnerLoginResponseCallback;
+import com.ohosure.smart.core.callback.LoginResponseCallback;
 import com.ohosure.smart.core.callback.QueryRoomResponseCallback;
 import com.ohosure.smart.core.callback.RoomResponseCallback;
 import com.ohosure.smart.core.callback.SceneResponseCallback;
 import com.ohosure.smart.core.callback.TimingTaskResponseCallback;
+import com.ohosure.smart.core.callback.ZigBeeInfoResponseCallback;
 import com.ohosure.smart.database.HSmartProvider;
 import com.ohosure.smart.database.SoloDBOperator;
+import com.ohosure.smart.net.RetrofitUtil;
 import com.ohosure.smart.zigbeegate.protocol.H0101;
 import com.ohosure.smart.zigbeegate.protocol.H0201;
 import com.ohosure.smart.zigbeegate.protocol.H0241;
@@ -33,12 +37,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 /**
- *
  * Created by 9527 on 2018/6/20.
  */
 @Keep
@@ -65,12 +74,125 @@ public class OhoSure {
     }
 
     /**
+     * 获取网关信息
+     *
+     * @param callback
+     */
+    public void getZigbeeInfo(final ZigBeeInfoResponseCallback callback) {
+        PrepareDomainHelper helper = new PrepareDomainHelper(context);
+        helper.udpDiscoverGate();
+        helper.setCallBackListener(new PrepareDomainHelper.NetCallBack() {
+            @Override
+            public void onDiscoverGate(int rescode, String description) {
+                callback.onSuccess(Const.SERVER, Const.PORT, Const.GATE_MAC);
+            }
+        });
+    }
+
+    /**
+     * 获取token
+     *
+     * @param name
+     * @param password
+     */
+    public void getToken(String name, String password, final InfoResponseCallback callback) {
+        RetrofitUtil.createHttpApiInstance().getToken(name, password, "password", "ohosure")
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        JSONObject jsonObject = null;
+                        try {
+                            if (response.code() == 200) {
+                                jsonObject = new JSONObject(response.body().string());
+                                Const.ACCESS_TOKEN = jsonObject.optString("access_token");
+                                callback.infoMsg(Const.ACCESS_TOKEN);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable throwable) {
+
+                    }
+                });
+    }
+
+    /**
+     * 绑定网关
+     *
+     * @param name
+     * @param mac
+     * @param token
+     */
+    public void bindUser(final String name, String mac, String token, final InfoResponseCallback callback) {
+        RetrofitUtil.createHttpApiInstance().postBinding("Bearer " + token, name, mac).
+                enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.code() == 200) {
+                            callback.infoMsg("绑定成功");
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable throwable) {
+
+                    }
+                });
+    }
+
+    /**
+     * 获取网关列表
+     *
+     * @param name
+     * @param token
+     */
+    public void getGateWaysInfo(String name, String token, final InfoResponseCallback callback) {
+        RetrofitUtil.createHttpApiInstance().getGateWaysInfo(name, token).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.code() == 200) {
+                    try {
+                        JSONArray jsonArray = new JSONArray(response.body().string());
+                        callback.infoMsg(jsonArray.toString());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable throwable) {
+
+            }
+        });
+    }
+
+    /**
      * 账号密码登陆
      */
-    public void initLogin() {
-        Const.GATE_MAC = "00124b000421f290";//test9527
-        //连接
-        mApp.startLogin("18817354579", "123456");
+    public void initLogin(String name, String password, String mac, String host, final LoginResponseCallback callback) {
+        Const.GATE_MAC = mac;
+        Const.MQTT_HOST = host;
+        mApp.startLogin(name, password);
+        mBusiness = new Business() {
+            @Override
+            public void onResponseAuth(int rescode) {
+                super.onResponseAuth(rescode);
+                if (rescode == 0) {
+                    callback.onSuccess();
+                }
+                mBusiness = null;
+            }
+        };
+        mApp.addBusinessObserver(mBusiness);
     }
 
     /**
@@ -81,21 +203,6 @@ public class OhoSure {
         helper.udpDiscoverGate();
         helper.setCallBackListener(new PrepareDomainHelper.NetCallBack() {
             @Override
-            public void onSerchServer(int rescode, String description) {
-
-            }
-
-            @Override
-            public void onBindUser(int rescode, String description) {
-
-            }
-
-            @Override
-            public void onSubmiteRegister(int rescode, String description) {
-
-            }
-
-            @Override
             public void onDiscoverGate(int rescode, String description) {
                 switch (rescode) {
                     case 0:
@@ -103,26 +210,11 @@ public class OhoSure {
                         mApp.startLogin(Const.DEFAULT_BIND_USERNAME, Const.DEFAULT_BIND_PASSWORD);
                         break;
                     case 1:
-                        callback.onError("家庭网关无响应");
+                        callback.onError("网关无响应");
                         break;
                     default:
                         break;
                 }
-            }
-
-            @Override
-            public void onChangePassword(int rescode, String description) {
-
-            }
-
-            @Override
-            public void onSearchGates(int rescode, String description, JSONArray jArray) {
-
-            }
-
-            @Override
-            public void onSearchAccount(int rescode, String description, JSONObject jObj) {
-
             }
         });
     }
@@ -130,8 +222,17 @@ public class OhoSure {
     /**
      * 退出登陆
      */
-    public void loginOut() {
+    public void loginOut(final LoginResponseCallback callback) {
         mApp.logout();
+        mBusiness = new Business() {
+            @Override
+            public void onResponseCancel() {
+                super.onResponseCancel();
+                callback.onSuccess();
+                mBusiness = null;
+            }
+        };
+        mApp.addBusinessObserver(mBusiness);
     }
 
     /**
@@ -319,7 +420,11 @@ public class OhoSure {
         mApp.sendControl(hSend);
     }
 
-
+    /**
+     * 查询区域
+     *
+     * @param callback
+     */
     public void queryRoomData(QueryRoomResponseCallback callback) {
         List<DBRoomArea> mList = new ArrayList<>();
         mList.clear();
