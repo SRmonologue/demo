@@ -13,6 +13,7 @@
 <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
 ```
 在安卓6.0的手机上要给予相应的权限适配
+
 在你的清单文件中添加
 ```
 <service 
