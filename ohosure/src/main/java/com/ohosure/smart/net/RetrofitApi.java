@@ -46,8 +46,8 @@ public interface RetrofitApi {
 
     //修改网关名称
     @Headers("Content-type:application/json;charset=UTF-8")
-    @PUT("/v2/gateway-manage/name")
-    Call<ResponseBody> putGatewayName(@Header("Authorization") String string, @Body RequestBody body);
+    @PATCH("/v2/gateways/{gwId}")
+    Call<ResponseBody> putGatewayName(@Header("Authorization") String string, @Path("gwId") String gwId, @Body RequestBody body);
 
     //获取网关下用户列表
     @GET("/v2/gateways/{gwId}/users")

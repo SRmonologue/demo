@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- 查看网络状态 -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <!--wifi获取组播-->
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
     <!-- 防止设备休眠 -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>

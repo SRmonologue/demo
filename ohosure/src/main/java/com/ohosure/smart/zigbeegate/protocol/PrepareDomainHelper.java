@@ -2,10 +2,8 @@ package com.ohosure.smart.zigbeegate.protocol;
 
 import android.content.Context;
 import android.net.wifi.WifiManager;
-
 import com.ohosure.smart.core.Const;
 import com.ohosure.smart.database.devkit.log.MLog;
-
 import java.io.IOException;
 import java.net.BindException;
 import java.net.DatagramPacket;

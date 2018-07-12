@@ -20,10 +20,12 @@ import com.ohosure.smart.net.RetrofitUtil;
 import com.ohosure.smart.zigbeegate.protocol.H0101;
 import com.ohosure.smart.zigbeegate.protocol.H0201;
 import com.ohosure.smart.zigbeegate.protocol.H0241;
+import com.ohosure.smart.zigbeegate.protocol.H0242;
 import com.ohosure.smart.zigbeegate.protocol.H0280;
 import com.ohosure.smart.zigbeegate.protocol.H0801;
 import com.ohosure.smart.zigbeegate.protocol.H0901;
 import com.ohosure.smart.zigbeegate.protocol.H0941;
+import com.ohosure.smart.zigbeegate.protocol.H0942;
 import com.ohosure.smart.zigbeegate.protocol.H0980;
 import com.ohosure.smart.zigbeegate.protocol.HReceive;
 import com.ohosure.smart.zigbeegate.protocol.HSend;
@@ -42,6 +44,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -147,6 +151,88 @@ public class OhoSure {
     }
 
     /**
+     * 管理员解除用户网关绑定
+     *
+     * @param name
+     * @param mac
+     * @param token
+     */
+    public void deleteBindUser(String name, String mac, String token, final InfoResponseCallback callback) {
+        RetrofitUtil.createHttpApiInstance().deleteUser("Bearer " + token, name, mac).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.code() == 200) {
+                    callback.infoMsg("解除绑定成功");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable throwable) {
+
+            }
+        });
+    }
+
+    /**
+     * 修改网关名称，只有管理员可以修改
+     *
+     * @param gatewayname
+     * @param mac
+     * @param token
+     */
+    public void modifyGatewayName(String gatewayname, String mac, String token, final InfoResponseCallback callback) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("gatewayName", gatewayname);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestBody body = RequestBody.create(MediaType.parse("application/json"), jsonObject.toString());
+        RetrofitUtil.createHttpApiInstance().putGatewayName("Bearer " + token, mac, body).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.code() == 200) {
+                    callback.infoMsg("修改成功");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable throwable) {
+
+            }
+        });
+    }
+
+    /**
+     * 获取网关下用户列表
+     *
+     * @param token
+     * @param mac
+     */
+    public void getGateUserList(String token, String mac, final InfoResponseCallback callback) {
+        RetrofitUtil.createHttpApiInstance().getGateUserList("Bearer" + token, mac).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.code() == 200) {
+                    try {
+                        JSONArray jsonArray = new JSONArray(response.body().string());
+                        callback.infoMsg(jsonArray.toString());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable throwable) {
+
+            }
+        });
+    }
+
+    /**
      * 获取网关列表
      *
      * @param name
@@ -165,6 +251,92 @@ public class OhoSure {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable throwable) {
+
+            }
+        });
+    }
+
+    /**
+     * /成为管理员
+     *
+     * @param username
+     * @param token
+     * @param mac
+     * @param callback
+     */
+    public void putAdmin(String username, String token, String mac, final InfoResponseCallback callback) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("username", username);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestBody body = RequestBody.create(MediaType.parse("application/json"), jsonObject.toString());
+        RetrofitUtil.createHttpApiInstance().putAdmin("Bearer " + token, mac, body).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.code() == 200) {
+                    callback.infoMsg("设置成功");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable throwable) {
+
+            }
+        });
+    }
+
+    /**
+     * 解除管理员
+     *
+     * @param username
+     * @param token
+     * @param mac
+     * @param callback
+     */
+    public void deleteGateAdmin(String username, String token, String mac, final InfoResponseCallback callback) {
+        RetrofitUtil.createHttpApiInstance().deleteAdmin("Bearer " + token, mac, username).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.code() == 200) {
+                    callback.infoMsg("解除成功");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable throwable) {
+
+            }
+        });
+    }
+
+    /**
+     * 管理员确认用户绑定
+     *
+     * @param username
+     * @param token
+     * @param mac
+     * @param callback
+     */
+    public void verifyUser(String username, String token, String mac, final InfoResponseCallback callback) {
+        JSONObject result = new JSONObject();
+        try {
+            result.put("roleName", "guest");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestBody body = RequestBody.create(MediaType.parse("application/json"), result.toString());
+        RetrofitUtil.createHttpApiInstance().verifyUser("Bearer " + token, mac, username, body).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.code() == 200) {
+                    callback.infoMsg("设置成功");
                 }
             }
 
@@ -264,6 +436,29 @@ public class OhoSure {
 
         mApp.sendRequest(new RequestTable(RequestTable.httpBody(Const.CLIENT_SESSION,
                 RequestTable.INFO_SCENEALL)));
+    }
+
+    /**
+     * 删除某个场景
+     * @param sceneId
+     * @param callback
+     */
+    public void deleteScene(int sceneId, final InfoResponseCallback callback) {
+        mBusiness = new Business() {
+            @Override
+            public void on0242Response(HReceive receive) {
+                super.on0242Response(receive);
+                H0242 h0242 = (H0242) receive;
+                h0242.analyze();
+                if (h0242.getResultCode() == 0) {
+                    callback.infoMsg("删除成功");
+                }
+            }
+        };
+
+        mApp.addBusinessObserver(mBusiness);
+        HSend hSend = new H0942(sceneId);
+        mApp.sendControl(hSend);
     }
 
     /**
