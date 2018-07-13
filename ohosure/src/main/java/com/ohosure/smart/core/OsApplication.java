@@ -105,19 +105,9 @@ public class OsApplication extends Application {
     private static final String TAG = OsApplication.class.getSimpleName();
 
     public static Context context;
-
-    /**
-     * 业务回调列表
-     */
     Business mBusiness = new Business();
-
-    /**
-     * 固定线程池length=4，辅助Activity获取各种数据
-     */
     private ExecutorService extFixedThreadPool;
-    //用户个性化配置
     SharedPreferences sharedPreferences;
-    //后台服务代理
     public CoreService.BusinessManager businessManager;
 
     @Keep
@@ -152,10 +142,8 @@ public class OsApplication extends Application {
         SharedPreferences preferences = getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
         String name = preferences.getString("name", "");
         if (name.equalsIgnoreCase(DEFAULT_BIND_USERNAME)) {
-            //内网登陆
             return true;
         } else {
-            //外网登陆
             return false;
         }
 
@@ -195,10 +183,8 @@ public class OsApplication extends Application {
         Const.CLIENT_ID = "Android|" +version+"|"+ DEVICE_ID;
         ConnectInfo connectInfo = new ConnectInfo();
         if (name.equalsIgnoreCase(DEFAULT_BIND_USERNAME)) {
-            //内网登陆
             connectInfo.setHost(Const.SERVER);
         } else {
-            //外网登陆
             connectInfo.setHost(Const.MQTT_HOST);
         }
         connectInfo.setPort(Const.PORT);
@@ -215,14 +201,13 @@ public class OsApplication extends Application {
 
     private AbstractBusinessCallback serverCallback = new AbstractBusinessCallback() {
         @Override
-        public void onMqttFeedback(String mqttMessage) {//外网mqtt
+        public void onMqttFeedback(String mqttMessage) {
 
             mparse(mqttMessage);
         }
 
-        //服务器Response过来的
         @Override
-        public void onServerFeedback(HttpMessage inMessage) {//方法最后还是调用mparse()方法
+        public void onServerFeedback(HttpMessage inMessage) {
             String matchURI = inMessage.getHeaders().get("match-request");
             MLog.i("APP", "---------matchURI--------->>:" + matchURI);
             if (matchURI.indexOf("requestUpdateDescription") > 0) {
@@ -242,19 +227,16 @@ public class OsApplication extends Application {
                     int updateMode = 0;
                     int result = 0;
                     try {
-
                         jsonObject = new JSONObject(inMessage.getResponse());
                         result = jsonObject.optInt("result");
                         if (result != 0) {
-                            reportResultCode(RequestSend.class.getSimpleName()
-                                    + "prev", result);
+                            reportResultCode(RequestSend.class.getSimpleName() + "prev", result);
                         }
                         jsonObject = jsonObject.getJSONObject("updateInfo");
                         updateMode = jsonObject.getInt("configUpdateMode");
 
                     } catch (JSONException e) {
                         e.printStackTrace();
-
                     }
 
                     mBusiness.onResponseUpdate(updateMode);
@@ -376,7 +358,6 @@ public class OsApplication extends Application {
                         }
 
                     } else if (matchURI.indexOf("requestTable") > 0) {
-                        //TODO
                         mBusiness.onRequestTable(inMessage.getResponse());
 
                     } else if (matchURI.indexOf("requestEnergy") > 0) {
@@ -532,8 +513,7 @@ public class OsApplication extends Application {
                                 if (result != 0) {
                                     mBusiness.onRemoteIssure(result);
 
-                                    reportResultCode(RequestSend.class.getSimpleName()
-                                            + "prev", result);
+                                    reportResultCode(RequestSend.class.getSimpleName() + "prev", result);
                                     return;
                                 }
                                 jobj = jsonObject.getJSONObject("msg");
@@ -547,7 +527,6 @@ public class OsApplication extends Application {
                                 e.printStackTrace();
                                 return;
                             }
-
                             mparse(jobj.optString("value"));
 
                         }
@@ -681,7 +660,6 @@ public class OsApplication extends Application {
                         h0265.analyze();
                         if (h0265.getResultCode() == 0) {
                             Cursor cursor = null;
-
                             for (HSmartDevice hSmartDevice : h0265.getList()) {
                                 cursor = getContentResolver().query(HSmartProvider.MetaData.RealData.CONTENT_URI,
                                         new String[]{HSmartProvider.MetaData.RealData.DEVICE_ID},
@@ -720,11 +698,9 @@ public class OsApplication extends Application {
                             }
 
                         }
-
                         mBusiness.on0265Response(h0265.getResultCode());
                     }
                     break;
-
                     /*
                      * 设备状态查询反馈
                      */
@@ -895,12 +871,6 @@ public class OsApplication extends Application {
                                 deviceInfo.moveToNext();
                                 boolean audioNotify = sharedPreferences.getBoolean("audioNotify", true);
                                 boolean messageNotify = sharedPreferences.getBoolean("messageNotify", true);
-                                //                                if (messageNotify)
-                                //                                    NotificationUtil.notiy(getApplicationContext(), "安防提醒", "[" + deviceInfo.getString(0) + "]" + "[" + deviceInfo.getString(1) + "] " + tip, (int) System.currentTimeMillis());
-                                //                                if (audioNotify) {//语音合成
-                                //                                    SpeechSynthesizerUtil.lists.add(deviceInfo.getString(0) + "," + deviceInfo.getString(1) + "," + tip);
-                                //                                    SpeechSynthesizerUtil.play();
-                                //                                }
                                 deviceInfo.close();
                             }
                         }
@@ -1027,12 +997,6 @@ public class OsApplication extends Application {
                                     deviceInfo.moveToNext();
                                     boolean audioNotify = sharedPreferences.getBoolean("audioNotify", true);
                                     boolean messageNotify = sharedPreferences.getBoolean("messageNotify", true);
-                                    //                                    if (messageNotify)
-                                    //                                        NotificationUtil.notiy(getApplicationContext(), "安防提醒", "[" + deviceInfo.getString(0) + "]" + "[" + deviceInfo.getString(1) + "] " + tip, (int) System.currentTimeMillis());
-                                    //                                    if (audioNotify) {//语音合成
-                                    //                                        SpeechSynthesizerUtil.lists.add(deviceInfo.getString(0) + "," + deviceInfo.getString(1) + "," + tip);
-                                    //                                        SpeechSynthesizerUtil.play();
-                                    //                                    }
                                     deviceInfo.close();
                                 }
                             }
@@ -1088,17 +1052,13 @@ public class OsApplication extends Application {
             }
         }
 
-        //服务器主动请求过来
         @Override
         public void onServerIn(HttpMessage inMessage) {
-
-
             try {
                 JSONObject jsonObject;
                 jsonObject = new JSONObject(inMessage.getResponse());
                 JSONObject jobj = jsonObject.getJSONObject("msg");
                 mparse(jobj.getString("value"));
-
             } catch (Exception e) {
                 MLog.w(TAG, "Json数据格式异常");
                 e.printStackTrace();
@@ -1116,9 +1076,6 @@ public class OsApplication extends Application {
                 Const.SERVER = connectInfo.getHost();
                 Const.PORT = connectInfo.getPort();
                 Const.GATE_MAC = connectInfo.getMac();
-                //                if (!KookongSDK.init(context, APP_KEY_KK, Const.GATE_MAC)) {
-                //                    MLog.e("APP", "KookongSDK初始化失败");
-                //                }
                 checkConfigUpdate();
             } else {
                 //提示登录错误
@@ -1140,12 +1097,10 @@ public class OsApplication extends Application {
 
     private ServiceConnection conn = new ServiceConnection() {
 
-        //Activity与Service断开连接时回调该方法
         @Override
         public void onServiceDisconnected(ComponentName name) {
         }
 
-        //Activity与Service连接成功时回调该方法
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             businessManager = (CoreService.BusinessManager) service;
@@ -1159,7 +1114,6 @@ public class OsApplication extends Application {
                 Const.CLIENT_SESSION = businessManager.getSession();
                 MLog.d("App", "已登录获取相关信息");
             }
-            //尝试用已存在的登录信息进行登录
             Intent intent = new Intent();
             intent.setClass(context, CoreService.class);
             context.startService(intent);
@@ -1171,14 +1125,7 @@ public class OsApplication extends Application {
     public void onCreate() {
         super.onCreate();
         sharedPreferences = getSharedPreferences("user_setting", MODE_PRIVATE);
-        //        vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        //activity获取网关数据线程池实例化
         extFixedThreadPool = Executors.newFixedThreadPool(4);
-
-        //        Intent intentAction = new Intent();
-        //        intentAction.setAction("devkit.mj.net.CoreService.action");
-        //        intentAction.setPackage(getPackageName());
-        //        bindService(intentAction, conn, Service.BIND_AUTO_CREATE);
         MLog.d("App", "application onCreate 结束");
     }
 
@@ -1189,31 +1136,24 @@ public class OsApplication extends Application {
     }
 
     public void addBusinessObserver(Business business) {
-        //        listBusiness.add(business);
         mBusiness = business;
     }
 
     public void removeBusinessObserver(Business business) {
-        //        listBusiness.remove(business);
     }
 
     //登录成功后检查更新
     public void checkConfigUpdate() {
         Cursor cursor = getContentResolver().query(
                 HSmartProvider.MetaData.Home.CONTENT_URI,
-                new String[]{HSmartProvider.MetaData.Home.LAST_TIME, HSmartProvider.MetaData.Home.GATE_MAC}, null,
-                null, null);
+                new String[]{HSmartProvider.MetaData.Home.LAST_TIME, HSmartProvider.MetaData.Home.GATE_MAC},
+                null, null, null);
         if (cursor != null && cursor.getCount() > 0) {
             if (cursor.moveToFirst()) {
-                String lastUpdateTime = cursor
-                        .getString(cursor
-                                .getColumnIndex(HSmartProvider.MetaData.Home.LAST_TIME));
-                String dbMac = cursor
-                        .getString(cursor
-                                .getColumnIndex(HSmartProvider.MetaData.Home.GATE_MAC));
+                String lastUpdateTime = cursor.getString(cursor.getColumnIndex(HSmartProvider.MetaData.Home.LAST_TIME));
+                String dbMac = cursor.getString(cursor.getColumnIndex(HSmartProvider.MetaData.Home.GATE_MAC));
                 if (dbMac.equalsIgnoreCase(Const.GATE_MAC))
-                    sendRequest(new RequestUpdate(Const.CLIENT_SESSION,
-                            lastUpdateTime));
+                    sendRequest(new RequestUpdate(Const.CLIENT_SESSION, lastUpdateTime));
                 else
                     sendRequest(new RequestConfig(Const.CLIENT_SESSION));
 
@@ -1221,7 +1161,6 @@ public class OsApplication extends Application {
 
             cursor.close();
         } else {
-
             sendRequest(new RequestConfig(Const.CLIENT_SESSION));
 
         }
@@ -1250,8 +1189,7 @@ public class OsApplication extends Application {
 
     //获取设备状态值
     private void checkDeviceValue() {
-        ContentProvider cp = getContentResolver()
-                .acquireContentProviderClient(HSmartProvider.class.getName())
+        ContentProvider cp = getContentResolver().acquireContentProviderClient(HSmartProvider.class.getName())
                 .getLocalContentProvider();
 
         DBHelper dbHelper = ((HSmartProvider) cp).getDbHelper();
@@ -1381,7 +1319,6 @@ public class OsApplication extends Application {
                             cursor.getInt(3), cursor.getInt(7), 0));
                 }
 
-                //                sendControl(new H0965(listDevice));
                 if (listDevice.size() < 25)
                     sendControl(new H0965(listDevice));
                 for (int i = 0; i < listDevice.size() / 25; i++) {
@@ -1402,12 +1339,9 @@ public class OsApplication extends Application {
     public void sendRequest(HttpOutMessage httpSendMessage) {
 
         if (isInternalNet()) {
-            //内网
             if (businessManager != null)
                 businessManager.sendControl(httpSendMessage.getString().getBytes());
         } else {
-            //外网
-            //businessManager.getHttpMsg(httpSendMessage);
             try {
                 String string = httpSendMessage.getString();
                 int i = string.indexOf("{");
@@ -1416,10 +1350,8 @@ public class OsApplication extends Application {
                 int Y = string.indexOf("HTTP");
                 int X = string.indexOf("/");
                 String key = string.substring(X + 1, Y);
-
                 System.out.println("-----------key----------->>" + key);
                 System.out.println("-----------value----------->>" + data);
-
                 String value = "{ \"key\" : \"" + key.trim() + "\", \"data\" : " + data.trim() + " }";
                 businessManager.publishHttpMsg(value.getBytes());
             } catch (Exception e) {
@@ -1442,7 +1374,7 @@ public class OsApplication extends Application {
         try {
             //红外命令配合震动
             if (hsend instanceof H09b0) {
-                //                vibrator.vibrate(60);
+                //vibrator.vibrate(60);
             }
             if (name.equalsIgnoreCase(DEFAULT_BIND_USERNAME)) {
                 //内网登陆
@@ -1457,7 +1389,6 @@ public class OsApplication extends Application {
                 businessManager.publishMsg(Base64.encodeToString(hsend.getBytes(), Base64.NO_WRAP).getBytes());
 
             }
-
 
         } catch (Exception e) {
             e.printStackTrace();

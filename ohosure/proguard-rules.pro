@@ -85,6 +85,33 @@
 
 #保证第三方jar不被混淆
 -keep class com.fasterxml.jackson.annotation.**{*;}
+-keep class retrofit2.converter.gson.**{*;}
+-keep class retrofit2.converter.scalars.**{*;}
+-keep class com.google.gson.**{*;}
+-keep class okhttp3.logging.**{*;}
+-keep class okhttp3.**{*;}
+-keep class okio.**{*;}
+-keep class retrofit2.**{*;}
+-keep class retrofit2.http.**{*;}
+
+-dontwarn javax.annotation.**
+-dontwarn org.conscrypt.**
+-dontwarn com.google.gson.**
+
+# Retrofit
+-dontnote retrofit2.Platform
+-dontnote retrofit2.Platform$IOS$MainThreadExecutor
+-dontwarn retrofit2.Platform$Java8
+-keepattributes Signature
+-keepattributes Exceptions
+
+# okhttp
+-dontwarn okio.**
+
+# Gson
+-keep class com.ohosure.smart.zigbeegate.protocol.bean.**{*;} # 自定义数据模型的bean目录
+
+
 #保证某包名下的类不被混淆
 -keep class com.ohosure.smart.core.callback.**{*;}
 -keep class com.ohosure.smart.zigbeegate.protocol.model.**{*;}

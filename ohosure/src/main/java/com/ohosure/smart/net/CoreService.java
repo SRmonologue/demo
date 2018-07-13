@@ -48,7 +48,6 @@ import static com.ohosure.smart.core.Const.DEFAULT_BIND_USERNAME;
 public class CoreService extends Service {
 
     private static final String TAG = CoreService.class.getSimpleName();
-
     //身份认证丢失
     private static final int AUTHENTICATION_LOST = 999;
     //终端辨识类型
@@ -71,7 +70,6 @@ public class CoreService extends Service {
     private MessageDispatchRunnable messageDispatchRunnable = new MessageDispatchRunnable();
     //心跳监听
     private HeartBeatWatcher heartBeatWatcher = new HeartBeatWatcher();
-
     //用户主动退出标识
     private boolean isCancel;
 
@@ -79,7 +77,6 @@ public class CoreService extends Service {
     private MqttConnectOptions conOpt;
     private boolean mDisconnect = false;
 
-    private String[] myTopic = {Const.GATE_MAC + "/topicReply"};
     private static int[] Qos = {2, 2};
 
     public class BusinessManager extends Binder {
@@ -111,12 +108,12 @@ public class CoreService extends Service {
         public void cancelLogin() {
 
             if (mConnectInfo.name.equalsIgnoreCase(DEFAULT_BIND_USERNAME)) {
-                //内网登陆
+
                 mClient.setMessage(new Cancel(session, CLIENT_TYPE).getByte());
-                //防止发出注销消息时，服务器无响应，直接通知上层注销成功
+
                 heartBeatWatcher.onResponseCancel();
             } else {
-                //外网登陆
+
                 mqttDisconnect();
             }
         }
@@ -129,7 +126,7 @@ public class CoreService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        //后台通信基本信息
+
         mConnectInfo = new ConnectInfo();
         SharedPreferences preferences = getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
         mConnectInfo.name = preferences.getString("name", "");
@@ -137,15 +134,14 @@ public class CoreService extends Service {
         mConnectInfo.mac = preferences.getString("mac", "");
         mConnectInfo.host = preferences.getString("host", "");
         mConnectInfo.port = preferences.getInt("port", 0);
-        //后台主线程处理
+
         mUIHandler = new UIHandler(this);
         //后台通信单例
         mClient = HttpSocketClient.getInstance(mLinstener);
         if (mConnectInfo.name.equalsIgnoreCase(DEFAULT_BIND_USERNAME)) {
-            //内网登陆
 
         } else {
-            //外网登陆
+
             if (client != null) {
                 if (!TextUtils.equals(client.getServerURI(), mConnectInfo.getHost()) || !TextUtils.equals(client.getClientId(), mConnectInfo.getClientId())) {
                     initMqtt();
@@ -176,10 +172,8 @@ public class CoreService extends Service {
                 mConnectInfo.clientId = connectInfo.clientId;
 
                 if (mConnectInfo.name.equalsIgnoreCase(DEFAULT_BIND_USERNAME)) {
-                    //内网登陆
 
                 } else {
-                    //外网登陆
 
                     if (client != null) {
                         if (!TextUtils.equals(client.getServerURI(), mConnectInfo.getHost()) || !TextUtils.equals(client.getClientId(), mConnectInfo.getClientId())) {
@@ -200,10 +194,10 @@ public class CoreService extends Service {
             }
         }
         if (mConnectInfo.name.equalsIgnoreCase(DEFAULT_BIND_USERNAME)) {
-            //内网登陆
+
             conncet();
         } else {
-            //外网登陆
+
             doClientConnection();
         }
 
@@ -237,7 +231,6 @@ public class CoreService extends Service {
         @Override
         public void onConnectError(String message) {
 
-            System.out.println("************onConnectError" + message + "************");
             //通知掉线
             if (heartBeatWatcher != null)
                 heartBeatWatcher.onConnectLost();
@@ -337,7 +330,6 @@ public class CoreService extends Service {
         Timer timer;
 
         private void sendHeartBeat() {
-
             //三次未收到心跳包，服务器无响应
             if (lastTimeStamp != 0 && (System.currentTimeMillis() - lastTimeStamp) > 3 * repeatTime) {
                 MLog.d(TAG, "三次未收到心跳包服务端无响应，关闭连接");
@@ -346,14 +338,7 @@ public class CoreService extends Service {
             } else {
                 //正常发心跳
                 mClient.setMessage(new Heartbeat(session, CLIENT_TYPE).getByte());
-
-                //                NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                //
-                //                notification.contentView.setTextViewText(R.id.title,"心跳"+System.currentTimeMillis());
-                //                manager.notify(NOTIFICATION_ID,notification);
             }
-
-
         }
 
         @Override
@@ -480,7 +465,7 @@ public class CoreService extends Service {
             try {
                 while (true) {
                     HttpMessage inMessage = mClient.getMessage();
-                    if (inMessage.getStatus().indexOf("POST") >= 0) {//服务器主动反馈
+                    if (inMessage.getStatus().indexOf("POST") >= 0) {
                         if (businessCallback != null) {
                             businessCallback.onServerIn(inMessage);
                         }
@@ -494,7 +479,7 @@ public class CoreService extends Service {
                             heartBeatWatcher.onResponseCancel();
                         } else {
                             if (businessCallback != null) {
-                                businessCallback.onServerFeedback(inMessage);//非mqtt相应处
+                                businessCallback.onServerFeedback(inMessage);
                             }
                         }
 
@@ -561,7 +546,6 @@ public class CoreService extends Service {
                 mDisconnect = false;
             } catch (MqttException e) {
 
-                //                e.printStackTrace();
             }
         } else {
             try {
@@ -658,7 +642,6 @@ public class CoreService extends Service {
                     HttpMessage httpMessage = new HttpMessage();
                     httpMessage.setHeaders(map);
                     httpMessage.setResponse(data);
-
                     businessCallback.onServerFeedback(httpMessage);
 
                 } catch (JSONException e) {

@@ -35,9 +35,6 @@ public class PrepareDomainHelper {
     }
 
 
-    /**
-     * 自发现本地网关
-     */
     public void udpDiscoverGate() {
         udpDiscoverGate(1);
         udpDiscoverGate(true);
@@ -59,8 +56,8 @@ public class PrepareDomainHelper {
                 DatagramPacket dataPacket = null, recivedata = null;
                 lock.acquire();
                 try {
-                    udpSocket = new DatagramSocket(Const.UDP_PORT);//只允许数据报发送给指定的目标地址
-                    udpSocket.setSoTimeout(Const.UDP_READ_TIMEOUT);//3秒超时
+                    udpSocket = new DatagramSocket(Const.UDP_PORT);
+                    udpSocket.setSoTimeout(Const.UDP_READ_TIMEOUT);
                     dataPacket = new DatagramPacket(buffer, MAX_DATA_PACKET_LENGTH);
                     byte[] data = Const.UDB_MESSAGE.getBytes("UTF-8");
                     dataPacket.setData(data);
@@ -130,11 +127,10 @@ public class PrepareDomainHelper {
                 MulticastSocket ms = null;
                 DatagramPacket dataPacket = null;
                 try {
-                    ms = new MulticastSocket();//可以将数据包以广播的形式发送给多个客户端，也可以接收，空的构造方法是使用本机地址和随机端口
-                    ms.setTimeToLive(32);//只能发送到本站点的网络中
+                    ms = new MulticastSocket();
+                    ms.setTimeToLive(32);
                     ms.setLoopbackMode(true);
                     ms.setReuseAddress(true);
-                    // 将本机的IP（这里可以写动态获取的IP）地址放到数据包里，其实server端接收到数据包后也能获取到发包方的IP的
                     byte[] data = "AutoBee".getBytes();
                     InetAddress address = InetAddress.getByName(multicastHost);
                     dataPacket = new DatagramPacket(data, data.length, address, 8888);
@@ -145,9 +141,9 @@ public class PrepareDomainHelper {
                 }
 
                 try {
-                    ds = new MulticastSocket(8888);//使用本机地址，指定端口
-                    receiveAddress = InetAddress.getByName(multicastHost);//在给定主机名的情况下确定主机的 IP 地址
-                    ds.joinGroup(receiveAddress);//加入指定组
+                    ds = new MulticastSocket(8888);
+                    receiveAddress = InetAddress.getByName(multicastHost);
+                    ds.joinGroup(receiveAddress);
                     new Thread(new udpRunnable(ds)).start();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -167,10 +163,10 @@ public class PrepareDomainHelper {
 
         public void run() {
             byte buf[] = new byte[1024];
-            DatagramPacket dp = new DatagramPacket(buf, 1024);//发送和接收数据报包的套接字
+            DatagramPacket dp = new DatagramPacket(buf, 1024);
             while (true) {
                 try {
-                    ds.receive(dp);//接收数据报包
+                    ds.receive(dp);
                     String gate = new String(buf, 0, dp.getLength());
                     MLog.d(TAG, "receive client message : " + new String(buf, 0, dp.getLength()));
                     Const.SERVER = gate.split(":")[0];

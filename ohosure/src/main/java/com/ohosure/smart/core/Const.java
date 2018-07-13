@@ -12,28 +12,19 @@ public class Const {
 
     public static final int UDP_PORT = 9888;
     public static final String ROOT_SERVER = "";
-    //公司自己服务器
-//        public static final String MQTT_HOST = "tcp://121.40.143.92:1883";
-//        public static final String BASE_URL = "https://api.ohosure.com/";
-
-    //绿地项目
     public static String MQTT_HOST = "tcp://mqtt.ohosureproj.com:1883";
     public static final String BASE_URL = "https://api.ohosureproj.com/";
 
     public static String ACCESS_TOKEN = "";
     public static String REFRESH_TOKEN = "";
     public static String CLIENT_SESSION = "";
-    //        	public static final String ROOT_SERVER = "172.16.1.151";
-    //        	public static final String ROOT_SERVER = "121.40.143.92";
     public static final int ROOT_PORT = 9888;
     public static final String ROOT = ROOT_SERVER + ":" + ROOT_PORT;
-
     public static int PORT = 0;
     public static String SERVER = "";
     public static String CLIENT_ID = "";
     public static final int HTTP_CONNECT_TIMEOUT = 5000;
     public static final int UDP_CONNECT_TIMEOUT = 3000;
-    // 一般不设置此参数
     public static final int HTTP_READ_TIMEOUT = 5000;
     public static final int UDP_READ_TIMEOUT = 3000;
 
@@ -50,9 +41,6 @@ public class Const {
     public static String APP_DOWNLOAD = "http://a.app.qq.com/o/simple.jsp?pkgname=com.floraison.smarthome";
     public static final String PREF_BANNER_INFO = "BANNER_INFO";
 
-    /**
-     * share preference
-     */
     public static final String PREF_FILE_NAME = "PREF_HSMART";
     public static final String FILE_NAME_WEATHER = "FILE_HSMART_WEATHER";
     public static final String PREF_LOACTION_PROVINCE = "loaction_province";
