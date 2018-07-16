@@ -25,7 +25,7 @@ android {
 }
 
 dependencies {
-//    implementation project(':ohosure')
+    implementation project(':ohosure')
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.1'
@@ -35,8 +35,8 @@ dependencies {
     implementation 'com.jakewharton:butterknife:8.4.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
 
-    implementation(name: 'ohosure-release', ext: 'aar')
-    implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
-    implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
-//
+//    implementation(name: 'ohosure-release', ext: 'aar')
+//    implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
+//    implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
+
 }

@@ -3,6 +3,7 @@ package com.ohosure.smart.core;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.annotation.Keep;
+import android.util.Log;
 
 import com.ohosure.smart.core.callback.ConfigResponseCallback;
 import com.ohosure.smart.core.callback.ControlResponseCallback;
@@ -19,13 +20,17 @@ import com.ohosure.smart.database.SoloDBOperator;
 import com.ohosure.smart.net.RetrofitUtil;
 import com.ohosure.smart.zigbeegate.protocol.H0101;
 import com.ohosure.smart.zigbeegate.protocol.H0201;
+import com.ohosure.smart.zigbeegate.protocol.H0202;
 import com.ohosure.smart.zigbeegate.protocol.H0241;
 import com.ohosure.smart.zigbeegate.protocol.H0242;
+import com.ohosure.smart.zigbeegate.protocol.H0262;
 import com.ohosure.smart.zigbeegate.protocol.H0280;
 import com.ohosure.smart.zigbeegate.protocol.H0801;
 import com.ohosure.smart.zigbeegate.protocol.H0901;
+import com.ohosure.smart.zigbeegate.protocol.H0902;
 import com.ohosure.smart.zigbeegate.protocol.H0941;
 import com.ohosure.smart.zigbeegate.protocol.H0942;
+import com.ohosure.smart.zigbeegate.protocol.H0962;
 import com.ohosure.smart.zigbeegate.protocol.H0980;
 import com.ohosure.smart.zigbeegate.protocol.HReceive;
 import com.ohosure.smart.zigbeegate.protocol.HSend;
@@ -34,6 +39,7 @@ import com.ohosure.smart.zigbeegate.protocol.RequestConfig;
 import com.ohosure.smart.zigbeegate.protocol.RequestTable;
 import com.ohosure.smart.zigbeegate.protocol.business.Business;
 import com.ohosure.smart.zigbeegate.protocol.model.DBRoomArea;
+import com.ohosure.smart.zigbeegate.protocol.model.HAction;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -439,7 +445,85 @@ public class OhoSure {
     }
 
     /**
+     * 开启场景
+     *
+     * @param sceneId
+     * @param callback
+     */
+    public void startScene(int sceneId, final InfoResponseCallback callback) {
+        mBusiness = new Business() {
+            @Override
+            public void on0262Response(HReceive receive) {
+                super.on0262Response(receive);
+                H0262 h0262 = (H0262) receive;
+                h0262.analyze();
+                if (h0262.getResultCode() == 0) {
+                    callback.infoMsg("开启场景成功");
+                } else {
+                    callback.infoMsg("开启场景失败");
+                }
+            }
+        };
+        mApp.addBusinessObserver(mBusiness);
+        HSend hSend = new H0962(sceneId);
+        mApp.sendControl(hSend);
+    }
+
+    /**
+     * 新增或编辑场景
+     *
+     * @param sceneId
+     * @param sceneName
+     * @param desc
+     * @param sceneType
+     * @param overviewId
+     */
+    public void editScene(int sceneId, String sceneName, String desc, int sceneType, int overviewId,
+                          final InfoResponseCallback callback) {
+        mBusiness = new Business() {
+            @Override
+            public void on0202Response(HReceive receive) {
+                super.on0202Response(receive);
+                H0202 h0202 = (H0202) receive;
+                h0202.analyze();
+                if (h0202.getResultCode() == 0) {
+                    callback.infoMsg("操作成功");
+                } else if (h0202.getResultCode() == 100) {
+                    callback.infoMsg("该场景名称已经存在");
+                }
+                mBusiness = null;
+            }
+        };
+        mApp.addBusinessObserver(mBusiness);
+        try {
+            HSend hSend = new H0902(sceneId, sceneName, desc, 0, sceneType, overviewId);
+            mApp.sendControl(hSend);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 获取某场景下的所有设备
+     * @param sceneId
+     */
+    public void getSceneConfig(int sceneId) {
+        mBusiness = new Business() {
+            @Override
+            public void onRequestTable(String res) {
+                super.onRequestTable(res);
+                Log.w("gz", res.toString());
+                mBusiness = null;
+            }
+        };
+        mApp.addBusinessObserver(mBusiness);
+        mApp.sendRequest(new RequestTable(RequestTable.httpBody(Const.CLIENT_SESSION,
+                RequestTable.INFO_SCENECONFIG, new HAction(sceneId, Const.ACTION_SCENE))));
+    }
+
+    /**
      * 删除某个场景
+     *
      * @param sceneId
      * @param callback
      */

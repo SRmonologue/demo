@@ -58,6 +58,9 @@ public class MainActivity extends AppCompatActivity implements BaseQuickAdapter.
         mList.add("解除管理员");
         mList.add("获取入网设备信息");
         mList.add("获取场景");
+        mList.add("开启场景");
+        mList.add("新增或编辑某个场景");
+        mList.add("获取某场景下的所有设备");
         mList.add("删除某个场景");
         mList.add("定时任务");
         mList.add("查询区域");
@@ -78,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements BaseQuickAdapter.
         switch (item) {
             case "账号密码登陆"://账号密码登陆
                 OhoSure.getInstance(MainActivity.this).initLogin("18817354579", "123456",
-                        "00124b000421f290", "tcp://mqtt.ohosureproj.com:1883", new LoginResponseCallback() {
+                        "00124b00128090fb", "tcp://mqtt.ohosureproj.com:1883", new LoginResponseCallback() {
                             @Override
                             public void onSuccess() {
                                 Alerter.create(MainActivity.this)
@@ -275,6 +278,34 @@ public class MainActivity extends AppCompatActivity implements BaseQuickAdapter.
                     }
                 });
                 break;
+            case "开启场景":
+                OhoSure.getInstance(MainActivity.this).startScene(74, new InfoResponseCallback() {
+                    @Override
+                    public void infoMsg(String msg) {
+                        Alerter.create(MainActivity.this)
+                                .setTitle("开启场景")
+                                .setText(msg)
+                                .setDuration(1000)
+                                .show();
+                    }
+                });
+                break;
+            case "新增或编辑某个场景":
+                OhoSure.getInstance(MainActivity.this).editScene(0, "全开", "",
+                        0, 0, new InfoResponseCallback() {
+                            @Override
+                            public void infoMsg(String msg) {
+                                Alerter.create(MainActivity.this)
+                                        .setTitle("新增或编辑某个场景")
+                                        .setText(msg)
+                                        .setDuration(10000)
+                                        .show();
+                            }
+                        });
+                break;
+            case "获取某场景下的所有设备":
+                OhoSure.getInstance(MainActivity.this).getSceneConfig(75);
+                break;
             case "删除某个场景":
                 OhoSure.getInstance(MainActivity.this).deleteScene(94, new InfoResponseCallback() {
                     @Override
@@ -350,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements BaseQuickAdapter.
                 });
                 break;
             case "单控"://单控:
-                OhoSure.getInstance(MainActivity.this).getControl(164, 1, 2,
+                OhoSure.getInstance(MainActivity.this).getControl(130, 1, 2,
                         5, Const.toBytes(3), new ControlResponseCallback() {
                             @Override
                             public void getControlResponse(int i) {
