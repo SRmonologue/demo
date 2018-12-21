@@ -3,7 +3,6 @@ package com.ohosure.smart.core;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.annotation.Keep;
-import android.util.Log;
 
 import com.ohosure.smart.core.callback.ConfigResponseCallback;
 import com.ohosure.smart.core.callback.ControlResponseCallback;
@@ -13,7 +12,7 @@ import com.ohosure.smart.core.callback.LoginResponseCallback;
 import com.ohosure.smart.core.callback.QueryRoomResponseCallback;
 import com.ohosure.smart.core.callback.RoomResponseCallback;
 import com.ohosure.smart.core.callback.SceneResponseCallback;
-import com.ohosure.smart.core.callback.TimingTaskResponseCallback;
+import com.ohosure.smart.core.callback.TaskResponseCallback;
 import com.ohosure.smart.core.callback.ZigBeeInfoResponseCallback;
 import com.ohosure.smart.database.HSmartProvider;
 import com.ohosure.smart.database.SoloDBOperator;
@@ -21,17 +20,24 @@ import com.ohosure.smart.net.RetrofitUtil;
 import com.ohosure.smart.zigbeegate.protocol.H0101;
 import com.ohosure.smart.zigbeegate.protocol.H0201;
 import com.ohosure.smart.zigbeegate.protocol.H0202;
+import com.ohosure.smart.zigbeegate.protocol.H0204;
+import com.ohosure.smart.zigbeegate.protocol.H0205;
+import com.ohosure.smart.zigbeegate.protocol.H0222;
 import com.ohosure.smart.zigbeegate.protocol.H0241;
 import com.ohosure.smart.zigbeegate.protocol.H0242;
+import com.ohosure.smart.zigbeegate.protocol.H0244;
 import com.ohosure.smart.zigbeegate.protocol.H0262;
-import com.ohosure.smart.zigbeegate.protocol.H0280;
 import com.ohosure.smart.zigbeegate.protocol.H0801;
 import com.ohosure.smart.zigbeegate.protocol.H0901;
 import com.ohosure.smart.zigbeegate.protocol.H0902;
+import com.ohosure.smart.zigbeegate.protocol.H0904;
+import com.ohosure.smart.zigbeegate.protocol.H0905;
+import com.ohosure.smart.zigbeegate.protocol.H0922;
 import com.ohosure.smart.zigbeegate.protocol.H0941;
 import com.ohosure.smart.zigbeegate.protocol.H0942;
+import com.ohosure.smart.zigbeegate.protocol.H0944;
 import com.ohosure.smart.zigbeegate.protocol.H0962;
-import com.ohosure.smart.zigbeegate.protocol.H0980;
+import com.ohosure.smart.zigbeegate.protocol.HBehavior;
 import com.ohosure.smart.zigbeegate.protocol.HReceive;
 import com.ohosure.smart.zigbeegate.protocol.HSend;
 import com.ohosure.smart.zigbeegate.protocol.PrepareDomainHelper;
@@ -504,15 +510,52 @@ public class OhoSure {
     }
 
     /**
+     * 场景配置
+     *
+     * @param sceneId
+     * @param list
+     * @param callback
+     */
+    public void sceneConfigure(int sceneId, ArrayList<HBehavior> list, final InfoResponseCallback callback) {
+        mBusiness = new Business() {
+            @Override
+            public void on0222Response(HReceive receive) {
+                super.on0222Response(receive);
+                H0222 h0222 = (H0222) receive;
+                h0222.analyze();
+                if (h0222.getResultCode() == 0) {
+                    callback.infoMsg("配置成功");
+                }
+                mBusiness = null;
+            }
+        };
+        mApp.addBusinessObserver(mBusiness);
+
+        HSend hSend = new H0922(sceneId, 2, list);
+        mApp.sendControl(hSend);
+    }
+
+    /**
      * 获取某场景下的所有设备
+     *
      * @param sceneId
      */
-    public void getSceneConfig(int sceneId) {
+    public void getSceneConfig(int sceneId, final InfoResponseCallback callback) {
         mBusiness = new Business() {
             @Override
             public void onRequestTable(String res) {
                 super.onRequestTable(res);
-                Log.w("gz", res.toString());
+                JSONObject jsonObject = null;
+                try {
+                    jsonObject = new JSONObject(res);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                String task = jsonObject.optString("queryInfo");
+                if (!RequestTable.INFO_SCENECONFIG.equalsIgnoreCase(task)) {
+                    return;
+                }
+                callback.infoMsg(res);
                 mBusiness = null;
             }
         };
@@ -550,7 +593,37 @@ public class OhoSure {
      *
      * @param callback
      */
-    public void getTimingTask(final TimingTaskResponseCallback callback) {
+    public void getInfoTaskAll(final InfoResponseCallback callback) {
+        mBusiness = new Business() {
+            @Override
+            public void onRequestTable(String res) {
+                super.onRequestTable(res);
+                JSONObject jsonObject = null;
+                try {
+                    jsonObject = new JSONObject(res);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                String task = jsonObject.optString("queryInfo");
+                if (!RequestTable.INFO_TASKALL.equalsIgnoreCase(task)) {
+                    return;
+                }
+                callback.infoMsg(res);
+                mBusiness = null;
+            }
+        };
+        mApp.addBusinessObserver(mBusiness);
+
+        mApp.sendRequest(new RequestTable(RequestTable.httpBody(Const.CLIENT_SESSION,
+                RequestTable.INFO_TASKALL)));
+    }
+
+    /**
+     * 获取当日执行任务列表
+     *
+     * @param callback
+     */
+    public void getInfoTaskToday(final InfoResponseCallback callback) {
         mBusiness = new Business() {
             @Override
             public void onRequestTable(String res) {
@@ -565,7 +638,7 @@ public class OhoSure {
                 if (!RequestTable.INFO_TASK_TODAY.equalsIgnoreCase(task)) {
                     return;
                 }
-                callback.getTimingTaskResponse(res);
+                callback.infoMsg(res);
                 mBusiness = null;
             }
         };
@@ -573,6 +646,79 @@ public class OhoSure {
 
         mApp.sendRequest(new RequestTable(RequestTable.httpBody(Const.CLIENT_SESSION,
                 RequestTable.INFO_TASK_TODAY)));
+
+    }
+
+    /**
+     * 定时任务使能
+     *
+     * @param taskId
+     * @param enable
+     */
+    public void taskToggle(int taskId, int enable, final InfoResponseCallback callback) {
+        mBusiness = new Business() {
+            @Override
+            public void on0205Response(HReceive receive) {
+                super.on0205Response(receive);
+                H0205 h0205 = (H0205) receive;
+                if (h0205.getResultCode() == 0) {
+                    callback.infoMsg("成功");
+                }
+                mBusiness = null;
+            }
+        };
+        mApp.addBusinessObserver(mBusiness);
+        mApp.sendControl(new H0905(taskId, enable));
+    }
+
+    /**
+     * 删除定时任务
+     *
+     * @param taskId
+     * @param callback
+     */
+    public void deleteTask(int taskId, final InfoResponseCallback callback) {
+        mBusiness = new Business() {
+            @Override
+            public void on0244Response(HReceive receive) {
+                super.on0244Response(receive);
+                H0244 h0244 = (H0244) receive;
+                if (h0244.getResultCode() == 0) {
+                    callback.infoMsg("成功");
+                }
+                mBusiness = null;
+            }
+        };
+        mApp.addBusinessObserver(mBusiness);
+        mApp.sendControl(new H0944(taskId));
+    }
+
+    /**
+     * 添加定时任务
+     * @param taskId
+     * @param weekdaySelect
+     * @param executeTime
+     * @param enable
+     * @param mark
+     */
+    public void addTask(int taskId, int weekdaySelect, int executeTime, int enable, String mark, final TaskResponseCallback callback) {
+        mBusiness = new Business() {
+            @Override
+            public void on0204Response(HReceive receive) {
+                super.on0204Response(receive);
+                H0204 h0204 = (H0204) receive;
+                if (h0204.getResultCode() == 0) {
+                    callback.infoMsg("成功", h0204.getTaskId());
+                }
+                mBusiness = null;
+            }
+        };
+        mApp.addBusinessObserver(mBusiness);
+        try {
+            mApp.sendControl(new H0904(taskId, weekdaySelect, executeTime, enable, mark));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -582,14 +728,14 @@ public class OhoSure {
      */
     public void getConfigResponseJson(final ConfigResponseCallback callback) {
         mBusiness = new Business() {
-            @Override
-            public void on0280Response(HReceive receive) {
-                super.on0280Response(receive);
-                H0280 h0280 = (H0280) receive;
-                if (h0280.getResultCode() == 0) {
-                    mApp.sendRequest(new RequestConfig(Const.CLIENT_SESSION));
-                }
-            }
+            //            @Override
+            //            public void on0280Response(HReceive receive) {
+            //                super.on0280Response(receive);
+            //                H0280 h0280 = (H0280) receive;
+            //                if (h0280.getResultCode() == 0) {
+            //                    mApp.sendRequest(new RequestConfig(Const.CLIENT_SESSION));
+            //                }
+            //            }
 
             @Override
             public void onResponseConfigJson(String res) {
@@ -601,7 +747,8 @@ public class OhoSure {
 
         mApp.addBusinessObserver(mBusiness);
 
-        mApp.sendControl(new H0980(1));
+        mApp.sendRequest(new RequestConfig(Const.CLIENT_SESSION));
+        //        mApp.sendControl(new H0980(1));
     }
 
     /**

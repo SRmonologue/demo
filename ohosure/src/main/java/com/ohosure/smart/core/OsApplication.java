@@ -105,7 +105,7 @@ public class OsApplication extends Application {
     private static final String TAG = OsApplication.class.getSimpleName();
 
     public static Context context;
-    Business mBusiness = new Business();
+    private ArrayList<Business> mBusiness = new ArrayList<>();
     private ExecutorService extFixedThreadPool;
     SharedPreferences sharedPreferences;
     public CoreService.BusinessManager businessManager;
@@ -214,7 +214,9 @@ public class OsApplication extends Application {
                 JSONObject json;
                 try {
                     json = new JSONObject(inMessage.getResponse());
-                    mBusiness.onRequestUpdateDescription(json);
+                    for (Business business : mBusiness) {
+                        business.onRequestUpdateDescription(json);
+                    }
                 } catch (JSONException e) {
 
                     e.printStackTrace();
@@ -239,7 +241,9 @@ public class OsApplication extends Application {
                         e.printStackTrace();
                     }
 
-                    mBusiness.onResponseUpdate(updateMode);
+                    for (Business business : mBusiness) {
+                        business.onResponseUpdate(updateMode);
+                    }
                     if (updateMode != 0) {
                         sendRequest(new RequestConfig(Const.CLIENT_SESSION));
                     } else {
@@ -260,12 +264,16 @@ public class OsApplication extends Application {
                             int res = jobj.optInt("result");
                             if (res != 0) {
                                 reportResultCode(RequestConfig.class.getSimpleName(), res);
-                                mBusiness.onResponseConfig(1);
+                                for (Business business : mBusiness) {
+                                    business.onResponseConfig(1);
+                                }
 
                                 return;
                             }
                             MLog.d(TAG, "开始配置更新" + System.currentTimeMillis());
-                            mBusiness.onResponseConfigJson(inMessage.getResponse());
+                            for (Business business : mBusiness) {
+                                business.onResponseConfigJson(inMessage.getResponse());
+                            }
                             ContentProvider cp = getContentResolver()
                                     .acquireContentProviderClient(
                                             HSmartProvider.class.getName())
@@ -340,14 +348,18 @@ public class OsApplication extends Application {
                             }
                             db.setTransactionSuccessful();
                             // 通知应用层刷新数据
-                            mBusiness.onResponseConfig(0);
+                            for (Business business : mBusiness) {
+                                business.onResponseConfig(0);
+                            }
                             MLog.v(TAG, "配置更新成功" + System.currentTimeMillis());
 
                             //开始同步设备状态数据
                             checkDeviceValue();
 
                         } catch (Exception e) {
-                            mBusiness.onResponseConfig(1);
+                            for (Business business : mBusiness) {
+                                business.onResponseConfig(1);
+                            }
                             reportResultCode(RequestConfig.class.getSimpleName(), 404);
                             MLog.e(TAG, "配置更新失败");
                             e.printStackTrace();
@@ -358,13 +370,17 @@ public class OsApplication extends Application {
                         }
 
                     } else if (matchURI.indexOf("requestTable") > 0) {
-                        mBusiness.onRequestTable(inMessage.getResponse());
+                        for (Business business : mBusiness) {
+                            business.onRequestTable(inMessage.getResponse());
+                        }
 
                     } else if (matchURI.indexOf("requestEnergy") > 0) {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            mBusiness.onRequestEnergy(json);
+                            for (Business business : mBusiness) {
+                                business.onRequestEnergy(json);
+                            }
                         } catch (JSONException e) {
 
                             e.printStackTrace();
@@ -374,7 +390,9 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            mBusiness.onRequestDeviceList(json);
+                            for (Business business : mBusiness) {
+                                business.onRequestDeviceList(json);
+                            }
                         } catch (JSONException e) {
 
                             e.printStackTrace();
@@ -384,7 +402,9 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            mBusiness.onRequestAddDevice(json);
+                            for (Business business : mBusiness) {
+                                business.onRequestAddDevice(json);
+                            }
                         } catch (JSONException e) {
 
                             e.printStackTrace();
@@ -394,7 +414,9 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            mBusiness.onRequestVerifyUser(json);
+                            for (Business business : mBusiness) {
+                                business.onRequestVerifyUser(json);
+                            }
                         } catch (JSONException e) {
 
                             e.printStackTrace();
@@ -404,7 +426,9 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            mBusiness.onRequestDelDevice(json);
+                            for (Business business : mBusiness) {
+                                business.onRequestDelDevice(json);
+                            }
                         } catch (JSONException e) {
 
                             e.printStackTrace();
@@ -414,7 +438,9 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            mBusiness.onRequestUserList(json);
+                            for (Business business : mBusiness) {
+                                business.onRequestUserList(json);
+                            }
                         } catch (JSONException e) {
 
                             e.printStackTrace();
@@ -424,7 +450,9 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            mBusiness.onRequestAddUser(json);
+                            for (Business business : mBusiness) {
+                                business.onRequestAddUser(json);
+                            }
                         } catch (JSONException e) {
 
                             e.printStackTrace();
@@ -434,7 +462,9 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            mBusiness.onRequestDelUser(json);
+                            for (Business business : mBusiness) {
+                                business.onRequestDelUser(json);
+                            }
                         } catch (JSONException e) {
 
                             e.printStackTrace();
@@ -444,7 +474,9 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            mBusiness.onRequestUnbindUser(json);
+                            for (Business business : mBusiness) {
+                                business.onRequestUnbindUser(json);
+                            }
                         } catch (JSONException e) {
 
                             e.printStackTrace();
@@ -454,7 +486,9 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            mBusiness.onRequestSendSmsCode(json);
+                            for (Business business : mBusiness) {
+                                business.onRequestSendSmsCode(json);
+                            }
                         } catch (JSONException e) {
 
                             e.printStackTrace();
@@ -464,7 +498,9 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            mBusiness.onRequestPutAdmin(json);
+                            for (Business business : mBusiness) {
+                                business.onRequestPutAdmin(json);
+                            }
                         } catch (JSONException e) {
 
                             e.printStackTrace();
@@ -474,7 +510,9 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            mBusiness.onRequestRenameAlias(json);
+                            for (Business business : mBusiness) {
+                                business.onRequestRenameAlias(json);
+                            }
                         } catch (JSONException e) {
 
                             e.printStackTrace();
@@ -484,7 +522,9 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            mBusiness.onRequestAlarm(json);
+                            for (Business business : mBusiness) {
+                                business.onRequestAlarm(json);
+                            }
                         } catch (JSONException e) {
 
                             e.printStackTrace();
@@ -494,11 +534,15 @@ public class OsApplication extends Application {
                         JSONObject json;
                         try {
                             json = new JSONObject(inMessage.getResponse());
-                            mBusiness.onRequestPushIRData(json);
+                            for (Business business : mBusiness) {
+                                business.onRequestPushIRData(json);
+                            }
                         } catch (JSONException e) {
                             reportResultCode(RequestSend.class.getSimpleName() + "prev", 444);
                             e.printStackTrace();
-                            mBusiness.onRequestPushIRData(null);
+                            for (Business business : mBusiness) {
+                                business.onRequestPushIRData(null);
+                            }
                         }
 
                     } else
@@ -511,7 +555,9 @@ public class OsApplication extends Application {
                                 jsonObject = new JSONObject(inMessage.getResponse());
                                 int result = jsonObject.optInt("result");
                                 if (result != 0) {
-                                    mBusiness.onRemoteIssure(result);
+                                    for (Business business : mBusiness) {
+                                        business.onRemoteIssure(result);
+                                    }
 
                                     reportResultCode(RequestSend.class.getSimpleName() + "prev", result);
                                     return;
@@ -545,114 +591,196 @@ public class OsApplication extends Application {
                 messageBodyLegth = bReader.getWORD();
                 switch (messageCode) {
                     case 0x0100:
-                        mBusiness.on0100Response(new H0100(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+                            business.on0100Response(new H0100(bReader.getByteArray()));
+                        }
                         break;
                     case 0x0201:
-                        mBusiness.on0201Response(new H0201(bReader.getByteArray()));
-
+                        for (Business business : mBusiness) {
+                            business.on0201Response(new H0201(bReader.getByteArray()));
+                        }
                         break;
                     case 0x0202:
-                        mBusiness.on0202Response(new H0202(bReader.getByteArray()));
-
+                        for (Business business : mBusiness) {
+                            business.on0202Response(new H0202(bReader.getByteArray()));
+                        }
                         break;
                     case 0x0203:
-                        mBusiness.on0203Response(new H0203(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+                            business.on0203Response(new H0203(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x0204:
-                        mBusiness.on0204Response(new H0204(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+                            business.on0204Response(new H0204(bReader.getByteArray()));
+
+                        }
 
                         break;
                     case 0x0205:
-                        mBusiness.on0205Response(new H0205(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+                            business.on0205Response(new H0205(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x0206:
-                        mBusiness.on0206Response(new H0206(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+                            business.on0206Response(new H0206(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x0207:
-                        mBusiness.on0207Response(new H0207(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0207Response(new H0207(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x0208:
-                        mBusiness.on0208Response(new H0208(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0208Response(new H0208(bReader.getByteArray()));
+                        }
                         break;
                     case 0x0209:
-                        mBusiness.on0209Response(new H0209(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0209Response(new H0209(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x020a:
-                        mBusiness.on020aResponse(new H020a(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on020aResponse(new H020a(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x020b:
-                        mBusiness.on020bResponse(new H020b(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+                            business.on020bResponse(new H020b(bReader.getByteArray()));
+
+                        }
 
                         break;
                     case 0x0241:
-                        mBusiness.on0241Response(new H0241(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0241Response(new H0241(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x0242:
-                        mBusiness.on0242Response(new H0242(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0242Response(new H0242(bReader.getByteArray()));
+                        }
                         break;
                     case 0x0243:
-                        mBusiness.on0243Response(new H0243(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0243Response(new H0243(bReader.getByteArray()));
+                        }
                         break;
                     case 0x0244:
-                        mBusiness.on0244Response(new H0244(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0244Response(new H0244(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x0245:
-                        mBusiness.on0245Response(new H0245(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0245Response(new H0245(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x0246:
-                        mBusiness.on0246Response(new H0246(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0246Response(new H0246(bReader.getByteArray()));
+                        }
                         break;
                     case 0x0211:
-                        mBusiness.on0211Response(new H0211(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0211Response(new H0211(bReader.getByteArray()));
+                        }
                         break;
                     case 0x0212:
-                        mBusiness.on0212Response(new H0212(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0212Response(new H0212(bReader.getByteArray()));
+                        }
                         break;
                     case 0x0213:
-                        mBusiness.on0213Response(new H0213(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0213Response(new H0213(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x0214:
-                        mBusiness.on0214Response(new H0214(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0214Response(new H0214(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x0215:
-                        mBusiness.on0215Response(new H0215(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0215Response(new H0215(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x0216:
-                        mBusiness.on0216Response(new H0216(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0216Response(new H0216(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x0217:
-                        mBusiness.on0217Response(new H0217(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0217Response(new H0217(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x0261:
-                        mBusiness.on0261Response(new H0261(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0261Response(new H0261(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x0221:
-                        mBusiness.on0221Response(new H0221(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0221Response(new H0221(bReader.getByteArray()));
+                        }
 
                     case 0x0222:
-                        mBusiness.on0222Response(new H0222(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0222Response(new H0222(bReader.getByteArray()));
+                        }
                         break;
                     case 0x0223:
-                        mBusiness.on0223Response(new H0223(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0223Response(new H0223(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x0262:
-                        mBusiness.on0262Response(new H0262(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0262Response(new H0262(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x0265: {
@@ -698,7 +826,10 @@ public class OsApplication extends Application {
                             }
 
                         }
-                        mBusiness.on0265Response(h0265.getResultCode());
+                        for (Business business : mBusiness) {
+
+                            business.on0265Response(h0265.getResultCode());
+                        }
                     }
                     break;
                     /*
@@ -730,52 +861,88 @@ public class OsApplication extends Application {
                             if (db != null)
                                 db.endTransaction();
                         }
-                        mBusiness.on0260Response(new H0260(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0260Response(new H0260(bReader.getByteArray()));
+                        }
 
                         break;
                     }
                     case 0x0280:
-                        mBusiness.on0280Response(new H0280(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0280Response(new H0280(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x0281:
-                        mBusiness.on0281Response(new H0281(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0281Response(new H0281(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x0282:
-                        mBusiness.on0282Response(new H0282(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0282Response(new H0282(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x0283:
-                        mBusiness.on0283Response(new H0283(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0283Response(new H0283(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x0284:
-                        mBusiness.on0284Response(new H0284(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0284Response(new H0284(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x0285:
-                        mBusiness.on0285Response(new H0284(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on0285Response(new H0284(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x02a1:
-                        mBusiness.on02a1Response(new H02a1(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on02a1Response(new H02a1(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x02a2:
-                        mBusiness.on02a2Response(new H02a2(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on02a2Response(new H02a2(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x02a3:
-                        mBusiness.on02a3Response(new H02a3(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on02a3Response(new H02a3(bReader.getByteArray()));
+                        }
                         break;
 
                     case 0x02b0:
-                        mBusiness.on02b0Response(new H02b0(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on02b0Response(new H02b0(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x02b1:
-                        mBusiness.on02b1Response(new H02b1(bReader.getByteArray()));
+                        for (Business business : mBusiness) {
+
+                            business.on02b1Response(new H02b1(bReader.getByteArray()));
+                        }
 
                         break;
                     case 0x0101://设备状态反馈
@@ -898,7 +1065,10 @@ public class OsApplication extends Application {
                             }
                             cursor.close();
                         }
-                        mBusiness.on0101Response(h0101);
+                        for (Business business : mBusiness) {
+
+                            business.on0101Response(h0101);
+                        }
 
                         break;
 
@@ -1024,7 +1194,10 @@ public class OsApplication extends Application {
                                 }
                                 mCursor.close();
                             }
-                            mBusiness.on0101Response(mH0101);
+                            for (Business business : mBusiness) {
+
+                                business.on0101Response(mH0101);
+                            }
                         }
                         break;
 
@@ -1032,13 +1205,19 @@ public class OsApplication extends Application {
                         H0230 h0230 = new H0230(bReader.getByteArray());
                         h0230.analyze();
                         h0230.updateDatabase(getContentResolver());
-                        mBusiness.onRequestDeviceOnlineChange();
+                        for (Business business : mBusiness) {
+
+                            business.onRequestDeviceOnlineChange();
+                        }
                     }
                     break;
                     case 0x0231: {//设备辅助定位
                         H0231 h0231 = new H0231(bReader.getByteArray());
                         h0231.analyze();
-                        mBusiness.onRequestLocation(h0231.getDevice());
+                        for (Business business : mBusiness) {
+
+                            business.onRequestLocation(h0231.getDevice());
+                        }
                     }
                     break;
 
@@ -1081,17 +1260,26 @@ public class OsApplication extends Application {
                 //提示登录错误
                 reportResultCode(RequestAuth.class.getSimpleName(), result);
             }
-            mBusiness.onResponseAuth(result);
+            for (Business business : mBusiness) {
+
+                business.onResponseAuth(result);
+            }
         }
 
         @Override
         public void onLoginOut() {
-            mBusiness.onResponseCancel();
+            for (Business business : mBusiness) {
+
+                business.onResponseCancel();
+            }
         }
 
         @Override
         public void onConnectLost() {
-            mBusiness.onResponseCancel();
+            for (Business business : mBusiness) {
+
+                business.onResponseCancel();
+            }
         }
     };
 
@@ -1136,10 +1324,11 @@ public class OsApplication extends Application {
     }
 
     public void addBusinessObserver(Business business) {
-        mBusiness = business;
+        mBusiness.add(business);
     }
 
     public void removeBusinessObserver(Business business) {
+        mBusiness.remove(business);
     }
 
     //登录成功后检查更新
@@ -1152,10 +1341,11 @@ public class OsApplication extends Application {
             if (cursor.moveToFirst()) {
                 String lastUpdateTime = cursor.getString(cursor.getColumnIndex(HSmartProvider.MetaData.Home.LAST_TIME));
                 String dbMac = cursor.getString(cursor.getColumnIndex(HSmartProvider.MetaData.Home.GATE_MAC));
-                if (dbMac.equalsIgnoreCase(Const.GATE_MAC))
+                if (dbMac.equalsIgnoreCase(Const.GATE_MAC)) {
                     sendRequest(new RequestUpdate(Const.CLIENT_SESSION, lastUpdateTime));
-                else
+                } else {
                     sendRequest(new RequestConfig(Const.CLIENT_SESSION));
+                }
 
             }
 
@@ -1176,8 +1366,9 @@ public class OsApplication extends Application {
             if (cursor.getCount() > 0) {
                 ArrayList<Long> listProductId = new ArrayList<Long>();
                 while (cursor.moveToNext()) {
-                    if (!listProductId.contains(cursor.getLong(0)))
+                    if (!listProductId.contains(cursor.getLong(0))) {
                         listProductId.add(cursor.getLong(0));
+                    }
                 }
                 sendControl(new H0960(listProductId));
             }
@@ -1319,13 +1510,15 @@ public class OsApplication extends Application {
                             cursor.getInt(3), cursor.getInt(7), 0));
                 }
 
-                if (listDevice.size() < 25)
+                if (listDevice.size() < 25) {
                     sendControl(new H0965(listDevice));
+                }
                 for (int i = 0; i < listDevice.size() / 25; i++) {
                     sendControl(new H0965(new ArrayList<HSmartDevice>(listDevice.subList(i * 25, (i + 1) * 25))));
                 }
-                if (listDevice.size() % 25 != 0)
+                if (listDevice.size() % 25 != 0) {
                     sendControl(new H0965(new ArrayList<HSmartDevice>(listDevice.subList(listDevice.size() - listDevice.size() % 25, listDevice.size()))));
+                }
             }
             cursor.close();
         }
@@ -1339,8 +1532,9 @@ public class OsApplication extends Application {
     public void sendRequest(HttpOutMessage httpSendMessage) {
 
         if (isInternalNet()) {
-            if (businessManager != null)
+            if (businessManager != null) {
                 businessManager.sendControl(httpSendMessage.getString().getBytes());
+            }
         } else {
             try {
                 String string = httpSendMessage.getString();
@@ -1400,7 +1594,8 @@ public class OsApplication extends Application {
      */
     public void reportResultCode(String requestType, int errorCode) {
 
-        if (errorCode == 1001)//系统忙不提示
+        if (errorCode == 1001) {//系统忙不提示
             return;
+        }
     }
 }

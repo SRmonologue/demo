@@ -19,7 +19,6 @@ import com.ohosure.smart.core.callback.LoginResponseCallback;
 import com.ohosure.smart.core.callback.QueryRoomResponseCallback;
 import com.ohosure.smart.core.callback.RoomResponseCallback;
 import com.ohosure.smart.core.callback.SceneResponseCallback;
-import com.ohosure.smart.core.callback.TimingTaskResponseCallback;
 import com.ohosure.smart.core.callback.ZigBeeInfoResponseCallback;
 import com.ohosure.smart.database.devkit.log.MLog;
 import com.ohosure.smart.zigbeegate.protocol.model.DBRoomArea;
@@ -304,7 +303,7 @@ public class MainActivity extends AppCompatActivity implements BaseQuickAdapter.
                         });
                 break;
             case "获取某场景下的所有设备":
-                OhoSure.getInstance(MainActivity.this).getSceneConfig(75);
+//                OhoSure.getInstance(MainActivity.this).getSceneConfig(75);
                 break;
             case "删除某个场景":
                 OhoSure.getInstance(MainActivity.this).deleteScene(94, new InfoResponseCallback() {
@@ -319,17 +318,17 @@ public class MainActivity extends AppCompatActivity implements BaseQuickAdapter.
                 });
                 break;
             case "定时任务"://定时任务:
-                OhoSure.getInstance(MainActivity.this).getTimingTask(new TimingTaskResponseCallback() {
-                    @Override
-                    public void getTimingTaskResponse(String res) {
-                        Alerter.create(MainActivity.this)
-                                .setTitle("定时任务列表")
-                                .setText(res)
-                                .setDuration(10000)
-                                .show();
-                        MLog.w(TAG, res);
-                    }
-                });
+//                OhoSure.getInstance(MainActivity.this).getTimingTask(new TimingTaskResponseCallback() {
+//                    @Override
+//                    public void getTimingTaskResponse(String res) {
+//                        Alerter.create(MainActivity.this)
+//                                .setTitle("定时任务列表")
+//                                .setText(res)
+//                                .setDuration(10000)
+//                                .show();
+//                        MLog.w(TAG, res);
+//                    }
+//                });
                 break;
             case "查询区域"://查询区域:
                 OhoSure.getInstance(MainActivity.this).queryRoomData(new QueryRoomResponseCallback() {
